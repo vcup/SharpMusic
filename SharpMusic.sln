@@ -1,0 +1,27 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FE1DA70D-97D8-49EF-A500-1E445D02E757}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpMusic.Core", "src\SharpMusic.Core\SharpMusic.Core.csproj", "{1E495223-CCC5-4630-86C0-061499A4DC27}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1E495223-CCC5-4630-86C0-061499A4DC27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E495223-CCC5-4630-86C0-061499A4DC27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E495223-CCC5-4630-86C0-061499A4DC27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E495223-CCC5-4630-86C0-061499A4DC27}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1E495223-CCC5-4630-86C0-061499A4DC27} = {FE1DA70D-97D8-49EF-A500-1E445D02E757}
+	EndGlobalSection
+EndGlobal
