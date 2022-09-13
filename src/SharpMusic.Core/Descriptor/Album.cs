@@ -29,4 +29,6 @@ public class Album : IDescriptor
         .ToList();
 
     public DateOnly ReleaseDate { get; set; }
+
+    public bool IsSingleAlbum { get; set; }
 }
