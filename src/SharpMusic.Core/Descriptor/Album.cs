@@ -4,7 +4,7 @@ public class Album : IDescriptor
 {
     private List<Artist>? _trackArtists;
 
-    public Album()
+    internal Album()
     {
         Guid = Guid.NewGuid();
         Names = new List<string>();
@@ -27,4 +27,6 @@ public class Album : IDescriptor
         .SelectMany(i => i.Artists)
         .DistinctBy(i => i.Guid)
         .ToList();
+
+    public DateOnly ReleaseDate { get; set; }
 }
