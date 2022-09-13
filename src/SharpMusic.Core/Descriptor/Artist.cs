@@ -10,6 +10,7 @@ public class Artist : IDescriptor
         Names = new List<string>();
         Description = string.Empty;
         Albums = new List<Album>();
+        JoinedGroups = new List<ArtistsGroup>();
     }
 
     public Guid Guid { get; }
@@ -24,4 +25,6 @@ public class Artist : IDescriptor
         .SelectMany(i => i.Tracks)
         .DistinctBy(i => i.Guid)
         .ToList();
+    
+    public List<ArtistsGroup> JoinedGroups { get; }
 }
