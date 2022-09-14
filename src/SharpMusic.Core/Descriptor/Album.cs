@@ -1,4 +1,6 @@
-﻿namespace SharpMusic.Core.Descriptor;
+﻿using SharpMusic.Core.ExpandInfo;
+
+namespace SharpMusic.Core.Descriptor;
 
 public class Album : IDescriptor
 {
@@ -11,6 +13,7 @@ public class Album : IDescriptor
         Description = string.Empty;
         Artists = new List<Artist>();
         Tracks = new List<Music>();
+        StaffList = new StaffList(this, null);
     }
 
     public Guid Guid { get; }
@@ -31,4 +34,6 @@ public class Album : IDescriptor
     public DateOnly ReleaseDate { get; set; }
 
     public bool IsSingleAlbum { get; set; }
+    
+    public StaffList StaffList { get; set; }
 }
