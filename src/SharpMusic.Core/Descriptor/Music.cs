@@ -2,9 +2,13 @@
 
 public class Music : IDescriptor
 {
-    internal Music()
+    internal Music(Guid guid)
     {
-        Guid = Guid.NewGuid();
+        Guid = guid;
+    }
+
+    public Music() : this(Guid.NewGuid())
+    {
         Names = new List<string>();
         Artists = new List<Artist>();
         AlbumsIncluded = new List<Album>();

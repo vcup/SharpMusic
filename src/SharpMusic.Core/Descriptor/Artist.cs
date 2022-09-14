@@ -4,16 +4,20 @@ public class Artist : IDescriptor
 {
     private List<Music>? _musics;
 
-    internal Artist()
+    internal Artist(Guid guid)
     {
-        Guid = Guid.NewGuid();
+        Guid = guid;
+    }
+
+    public Artist() : this(Guid.NewGuid())
+    {
         Names = new List<string>();
         Description = string.Empty;
         Albums = new List<Album>();
         JoinedGroups = new List<ArtistsGroup>();
     }
 
-    public Guid Guid { get; }
+    public Guid Guid { get; protected init; }
 
     public IList<string> Names { get; set; }
 
@@ -25,6 +29,6 @@ public class Artist : IDescriptor
         .SelectMany(i => i.Tracks)
         .DistinctBy(i => i.Guid)
         .ToList();
-    
+
     public List<ArtistsGroup> JoinedGroups { get; }
 }

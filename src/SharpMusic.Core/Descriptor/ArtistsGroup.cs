@@ -5,9 +5,9 @@ namespace SharpMusic.Core.Descriptor;
 
 public class ArtistsGroup : Artist
 {
-    internal ArtistsGroup()
+    internal ArtistsGroup(Guid guid, Artist organizer) : base(guid)
     {
-        Organizer = new Artist();
+        Organizer = organizer;
         var members = new ImplMembers(this);
         members.CollectionChanged += (sender, args) =>
         {
@@ -17,7 +17,8 @@ public class ArtistsGroup : Artist
             {
                 newItem.JoinedGroups.Add(this);
             }
-            else if (args.Action.HasFlag(NotifyCollectionChangedAction.Remove) && args.OldItems![0] is Artist removedItem)
+            else if (args.Action.HasFlag(NotifyCollectionChangedAction.Remove)
+                     && args.OldItems![0] is Artist removedItem)
             {
                 removedItem.JoinedGroups.Remove(this);
             }
@@ -27,6 +28,10 @@ public class ArtistsGroup : Artist
             //}
         };
         Members = members;
+    }
+
+    public ArtistsGroup(Artist organizer) : this(Guid.NewGuid(), organizer)
+    {
     }
 
     public Artist Organizer { get; set; }
@@ -48,6 +53,7 @@ public class ArtistsGroup : Artist
             {
                 item.JoinedGroups.Remove(_owner);
             }
+
             base.ClearItems();
         }
     }

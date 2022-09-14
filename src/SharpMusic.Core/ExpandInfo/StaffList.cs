@@ -2,15 +2,18 @@
 
 namespace SharpMusic.Core.ExpandInfo;
 
-public class StaffList
+public class StaffList : List<TrackParticipants>
 {
-    public StaffList(Album album, IEnumerable<TrackParticipants>? tracksParticipants)
+    public StaffList(Album album)
     {
         SourceAlbum = album;
-        TracksParticipantsList = tracksParticipants?.ToList() ?? new List<TrackParticipants>();
+    }
+    
+    public StaffList(Album album, IEnumerable<TrackParticipants> tracksParticipants)
+        : base(tracksParticipants)
+    {
+        SourceAlbum = album;
     }
 
     public Album SourceAlbum { get; }
-    
-    public List<TrackParticipants> TracksParticipantsList { get; }
 }

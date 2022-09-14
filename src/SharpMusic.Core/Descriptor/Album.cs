@@ -6,14 +6,18 @@ public class Album : IDescriptor
 {
     private List<Artist>? _trackArtists;
 
-    internal Album()
+    internal Album(Guid guid)
     {
-        Guid = Guid.NewGuid();
+        Guid = guid;
+    }
+
+    public Album() : this(Guid.NewGuid())
+    {
         Names = new List<string>();
         Description = string.Empty;
         Artists = new List<Artist>();
         Tracks = new List<Music>();
-        StaffList = new StaffList(this, null);
+        StaffList = new StaffList(this);
     }
 
     public Guid Guid { get; }
@@ -33,7 +37,7 @@ public class Album : IDescriptor
 
     public DateOnly ReleaseDate { get; set; }
 
-    public bool IsSingleAlbum { get; set; }
-    
+    public AlbumType Type { get; set; }
+
     public StaffList StaffList { get; set; }
 }
