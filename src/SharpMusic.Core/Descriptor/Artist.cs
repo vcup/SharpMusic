@@ -25,10 +25,5 @@ public class Artist : IDescriptor
 
     public List<Album> Albums { get; }
 
-    public List<Music> Musics => _musics ??= Albums
-        .SelectMany(i => i.Tracks)
-        .DistinctBy(i => i.Guid)
-        .ToList();
-
     public List<ArtistsGroup> JoinedGroups { get; }
 }

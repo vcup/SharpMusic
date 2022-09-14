@@ -18,8 +18,7 @@ public static class DescriptorExtension
                 .SelectMany(i => GetAssociatedDescriptors(i, SearchDescriptorOption.IgnoreArtistGroup)),
             Artist artist => artist.Albums
                 .Select(i => (IDescriptor)i)
-                .Concat(artist.JoinedGroups)
-                .Concat(artist.Musics),
+                .Concat(artist.JoinedGroups),
             Playlist playlist => playlist.Concat(playlist.GetAssociatedDescriptors()),
             _ => throw new ArgumentException()
         };
