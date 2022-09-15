@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 
 namespace SharpMusic.Core.Descriptor;
 
@@ -8,7 +7,14 @@ public class ArtistsGroup : Artist
     internal ArtistsGroup(Guid guid, Artist organizer) : base(guid)
     {
         Organizer = organizer;
-        var members = new ImplMembers(this);
+        var members = new CustomObservableImpl<Artist>((sender, _) =>
+        {
+            if (sender is not CustomObservableImpl<Artist> impl) return;
+            foreach (var item in impl)
+            {
+                item.JoinedGroups.Remove(this);
+            }
+        });
         members.CollectionChanged += (sender, args) =>
         {
             if (args.Action.HasFlag(NotifyCollectionChangedAction.Add)
@@ -22,10 +28,6 @@ public class ArtistsGroup : Artist
             {
                 removedItem.JoinedGroups.Remove(this);
             }
-            //else if (args.Action.HasFlag(NotifyCollectionChangedAction.Reset))
-            //{
-            // will do something on override method
-            //}
         };
         Members = members;
     }
@@ -37,24 +39,4 @@ public class ArtistsGroup : Artist
     public Artist Organizer { get; set; }
 
     public IList<Artist> Members { get; }
-
-    private class ImplMembers : ObservableCollection<Artist>
-    {
-        private readonly ArtistsGroup _owner;
-
-        public ImplMembers(ArtistsGroup owner)
-        {
-            _owner = owner;
-        }
-
-        protected override void ClearItems()
-        {
-            foreach (var item in this)
-            {
-                item.JoinedGroups.Remove(_owner);
-            }
-
-            base.ClearItems();
-        }
-    }
 }
