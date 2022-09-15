@@ -2,7 +2,7 @@
 
 var soundSource = new Uri("https://vcup.moe/e/_bazaar records - e^(x+i)＜ 3u.wav");
 using var player = new Player();
-player.Open(soundSource);
+using var disposable = player.Open(soundSource);
 
 player.Play();
 Console.ReadKey();
