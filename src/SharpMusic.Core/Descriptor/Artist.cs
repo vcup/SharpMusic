@@ -15,7 +15,7 @@ public class Artist : IDescriptor
     {
     }
 
-    public Guid Guid { get; protected init; }
+    public Guid Guid { get; }
 
     public IList<string> Names { get; set; }
 
