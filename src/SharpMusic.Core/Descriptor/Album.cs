@@ -9,15 +9,15 @@ public class Album : IDescriptor
     internal Album(Guid guid)
     {
         Guid = guid;
-    }
-
-    public Album() : this(Guid.NewGuid())
-    {
         Names = new List<string>();
         Description = string.Empty;
         Artists = new List<Artist>();
         Tracks = new List<Music>();
         StaffList = new StaffList(this);
+    }
+
+    public Album() : this(Guid.NewGuid())
+    {
     }
 
     public Guid Guid { get; }

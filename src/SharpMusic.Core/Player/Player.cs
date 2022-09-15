@@ -10,7 +10,7 @@ public class Player : IDisposable
     private readonly ISoundOut _soundOut;
     private IWaveSource? _waveSource;
 
-    internal Player(MultiMediaDevice device)
+    public Player(MultiMediaDevice device)
     {
         Device = device;
         if (Device.Type.HasFlag(MultiMediaDeviceType.DirectSound))
@@ -31,7 +31,7 @@ public class Player : IDisposable
         }
     }
 
-    internal Player() : this(new MultiMediaDevice())
+    public Player() : this(new MultiMediaDevice())
     {
     }
 

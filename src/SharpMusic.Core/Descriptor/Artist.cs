@@ -7,14 +7,14 @@ public class Artist : IDescriptor
     internal Artist(Guid guid)
     {
         Guid = guid;
-    }
-
-    public Artist() : this(Guid.NewGuid())
-    {
         Names = new List<string>();
         Description = string.Empty;
         Albums = new List<Album>();
         JoinedGroups = new List<ArtistsGroup>();
+    }
+
+    public Artist() : this(Guid.NewGuid())
+    {
     }
 
     public Guid Guid { get; protected init; }
