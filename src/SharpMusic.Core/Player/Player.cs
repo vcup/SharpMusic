@@ -35,6 +35,30 @@ public class Player : IDisposable
     {
     }
 
+    public PlaybackState PlaybackState => _soundOut.PlaybackState;
+
+    public TimeSpan Position
+    {
+        get => _waveSource?.GetPosition() ?? TimeSpan.Zero;
+        set => _waveSource?.SetPosition(value);
+    }
+
+    public TimeSpan Lenght => _waveSource?.GetLength() ?? TimeSpan.Zero;
+
+    public int Volume
+    {
+        get
+        {
+            CheckSoundOutIsInitialized();
+            return Math.Max(0, Math.Min(100, (int)(_soundOut.Volume * 100)));
+        }
+        set
+        {
+            CheckSoundOutIsInitialized();
+            _soundOut.Volume = Math.Max(0, Math.Min(1, value / 100f));
+        }
+    }
+
     private void CheckSoundOutIsInitialized()
     {
         if (_soundOut.IsInitialized()) return;
