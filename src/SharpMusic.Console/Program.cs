@@ -1,7 +1,7 @@
 ﻿using SharpMusic.Core.Player;
 
 var soundSource = new Uri("https://vcup.moe/e/_bazaar records - e^(x+i)＜ 3u.wav");
-var player = new Player();
+using var player = new Player();
 player.Open(soundSource);
 
 player.Play();
