@@ -24,7 +24,7 @@ public class ArtistsGroup : Artist
     {
         if (args.Action.HasFlag(NotifyCollectionChangedAction.Add)
             && args.NewItems![0] is Artist newItem
-            && newItem.JoinedGroups.All(i => i.Guid != this.Guid))
+            && newItem.JoinedGroups.All(i => i.Guid != Guid))
         {
             newItem.JoinedGroups.Add(this);
         }
