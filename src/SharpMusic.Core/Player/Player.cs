@@ -59,19 +59,6 @@ public class Player : IDisposable
         }
     }
 
-    private void CheckSoundOutIsInitialized()
-    {
-        if (_soundOut.IsInitialized()) return;
-        if (_waveSource is not null)
-        {
-            _soundOut.Initialize(_waveSource);
-        }
-        else
-        {
-            throw new InvalidOperationException(); // TODO: Add description
-        }
-    }
-
     public MultiMediaDevice Device { get; set; }
 
     public IDisposable Open(Uri uri)
@@ -111,5 +98,18 @@ public class Player : IDisposable
     {
         _soundOut.Dispose();
         _waveSource?.Dispose();
+    }
+
+    private void CheckSoundOutIsInitialized()
+    {
+        if (_soundOut.IsInitialized()) return;
+        if (_waveSource is not null)
+        {
+            _soundOut.Initialize(_waveSource);
+        }
+        else
+        {
+            throw new InvalidOperationException(); // TODO: Add description
+        }
     }
 }
