@@ -2,8 +2,6 @@
 
 public class Artist : IDescriptor
 {
-    private List<Music>? _musics;
-
     internal Artist(Guid guid)
     {
         Guid = guid;

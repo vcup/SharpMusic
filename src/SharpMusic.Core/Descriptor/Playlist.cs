@@ -6,12 +6,16 @@ public class Playlist : IDescriptor, IList<Music>, IReadOnlyList<Music>
 {
     private readonly List<Music> _musics;
 
-    public Playlist()
+    internal Playlist(Guid guid)
     {
-        Guid = Guid.NewGuid();
+        Guid = guid;
         _musics = new List<Music>();
         Names = new List<string>();
         Description = string.Empty;
+    }
+
+    public Playlist() : this(Guid.NewGuid())
+    {
     }
 
     public Guid Guid { get; }

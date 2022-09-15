@@ -5,13 +5,13 @@ public class Music : IDescriptor
     internal Music(Guid guid)
     {
         Guid = guid;
+        Names = new List<string>();
+        Artists = new List<Artist>();
+        AlbumsIncluded = new List<Album>();
     }
 
     public Music() : this(Guid.NewGuid())
     {
-        Names = new List<string>();
-        Artists = new List<Artist>();
-        AlbumsIncluded = new List<Album>();
     }
 
     public Guid Guid { get; }
