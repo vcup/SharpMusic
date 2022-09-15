@@ -1,4 +1,6 @@
-﻿namespace SharpMusic.Core.Descriptor;
+﻿using System.Collections.Specialized;
+
+namespace SharpMusic.Core.Descriptor;
 
 public class Artist : IDescriptor
 {
@@ -7,7 +9,9 @@ public class Artist : IDescriptor
         Guid = guid;
         Names = new List<string>();
         Description = string.Empty;
-        Albums = new List<Album>();
+        var album = new CustomObservableImpl<Album>(AlbumsReset);
+        album.CollectionChanged += AlbumsAddOrRemoved;
+        Albums = album;
         JoinedGroups = new List<ArtistsGroup>();
     }
 
@@ -21,7 +25,31 @@ public class Artist : IDescriptor
 
     public string Description { get; set; }
 
-    public List<Album> Albums { get; }
+    public IList<Album> Albums { get; }
 
-    public List<ArtistsGroup> JoinedGroups { get; }
+    public IList<ArtistsGroup> JoinedGroups { get; }
+
+    private void AlbumsAddOrRemoved(object? sender, NotifyCollectionChangedEventArgs args)
+    {
+        if (args.Action.HasFlag(NotifyCollectionChangedAction.Add)
+            && args.NewItems![0] is Album newItem
+            && newItem.Artists.All(i => i.Guid != Guid))
+        {
+            newItem.Artists.Add(this);
+        }
+        else if (args.Action.HasFlag(NotifyCollectionChangedAction.Remove)
+                 && args.OldItems![0] is Album removedItem)
+        {
+            removedItem.Artists.Remove(this);
+        }
+    }
+
+    private void AlbumsReset(object? sender, NotifyCollectionChangedEventArgs args)
+    {
+        if (sender is not CustomObservableImpl<Album> impl) return;
+        foreach (var item in impl)
+        {
+            item.Artists.Remove(this);
+        }
+    }
 }
