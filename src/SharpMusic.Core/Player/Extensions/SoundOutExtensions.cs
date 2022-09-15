@@ -18,7 +18,8 @@ public static class SoundOutExtensions
         switch (soundOut)
         {
             case DirectSoundOut:
-                field = typeof(DirectSoundOut).GetField("_isInitialized", BindingFlags.NonPublic);
+                field = typeof(DirectSoundOut)
+                    .GetField("_isInitialized", BindingFlags.NonPublic | BindingFlags.Instance);
                 if (field is null)
                 {
                     throw new InvalidOperationException(); // TODO: Add description
@@ -26,7 +27,8 @@ public static class SoundOutExtensions
 
                 break;
             case WasapiOut:
-                field = typeof(WasapiOut).GetField("_isInitialized", BindingFlags.NonPublic);
+                field = typeof(WasapiOut)
+                    .GetField("_isInitialized", BindingFlags.NonPublic | BindingFlags.Instance);
                 if (field is null)
                 {
                     throw new InvalidOperationException(); // TODO: Add description
@@ -34,7 +36,8 @@ public static class SoundOutExtensions
 
                 break;
             case WaveOut:
-                field = typeof(WaveOut).GetField("_isInitialized", BindingFlags.NonPublic);
+                field = typeof(WaveOut)
+                    .GetField("_isInitialized", BindingFlags.NonPublic | BindingFlags.Instance);
                 if (field is null)
                 {
                     throw new InvalidOperationException(); // TODO: Add description
