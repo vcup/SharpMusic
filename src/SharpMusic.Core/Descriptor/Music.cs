@@ -4,11 +4,12 @@ namespace SharpMusic.Core.Descriptor;
 
 public class Music : IDescriptor
 {
+    private Artist[]? _artists;
+
     internal Music(Guid guid)
     {
         Guid = guid;
         Names = new List<string>();
-        Artists = new List<Artist>();
         var albumsIncluded = new CustomObservableImpl<Album>(AlbumsIncludedReset);
         albumsIncluded.CollectionChanged += AlbumsIncludedAddOrRemoved;
         AlbumsIncluded = albumsIncluded;
@@ -31,7 +32,17 @@ public class Music : IDescriptor
         set { }
     }
 
-    public IList<Artist> Artists { get; }
+    /// <summary>
+    /// earliest album to included this music corresponds to the artists in the staff list
+    /// </summary>
+    public IList<Artist> Artists => _artists ??=
+        AlbumsIncluded
+            .FirstOrDefault(i => i.StaffList.Any())?
+            .StaffList
+            .First(i => i.SourceMusic.Guid == Guid)
+            .Keys
+            .ToArray()
+        ?? Array.Empty<Artist>();
 
     /// <summary>
     /// return the albums of included this music, sort by release date
