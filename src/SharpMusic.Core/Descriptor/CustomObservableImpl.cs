@@ -17,4 +17,29 @@ internal sealed class CustomObservableImpl<T> : ObservableCollection<T>
         _handler(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         base.ClearItems();
     }
+
+    public void AddWithoutNotify(T item)
+    {
+        Items.Add(item);
+    }
+
+    public bool RemoveWithoutNotify(T item)
+    {
+        return Items.Remove(item);
+    }
+
+    public void RemoveAtWithoutNotify(int index)
+    {
+        Items.RemoveAt(index);
+    }
+
+    public void InsertWithoutNotify(int index, T item)
+    {
+        Items.Insert(index, item);
+    }
+
+    public void ClearWithoutNotify()
+    {
+        Items.Clear();
+    }
 }
