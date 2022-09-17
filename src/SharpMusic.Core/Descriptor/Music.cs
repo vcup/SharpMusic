@@ -13,6 +13,7 @@ public class Music : IDescriptor
         var albumsIncluded = new CustomObservableImpl<Album>(AlbumsIncludedReset);
         albumsIncluded.CollectionChanged += AlbumsIncludedAddOrRemoved;
         AlbumsIncluded = albumsIncluded;
+        SoundSource = new List<Uri>();
     }
 
     public Music() : this(Guid.NewGuid())
@@ -48,6 +49,8 @@ public class Music : IDescriptor
     /// return the albums of included this music, sort by release date
     /// </summary>
     public IList<Album> AlbumsIncluded { get; }
+
+    public IList<Uri> SoundSource { get; }
 
     private void AlbumsIncludedAddOrRemoved(object? sender, NotifyCollectionChangedEventArgs args)
     {
