@@ -27,10 +27,10 @@ public class Music : IDescriptor
         set { }
     }
 
-    public List<Artist> Artists { get; }
+    public IList<Artist> Artists { get; }
 
     /// <summary>
     /// return the albums of included this music, sort by release date
     /// </summary>
-    public List<Album> AlbumsIncluded { get; }
+    public IList<Album> AlbumsIncluded { get; }
 }

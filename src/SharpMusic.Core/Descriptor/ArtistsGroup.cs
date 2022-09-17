@@ -24,14 +24,15 @@ public class ArtistsGroup : Artist
     {
         if (args.Action.HasFlag(NotifyCollectionChangedAction.Add)
             && args.NewItems![0] is Artist newItem
-            && newItem.JoinedGroups.All(i => i.Guid != Guid))
+            && newItem.JoinedGroups.All(i => i.Guid != Guid)
+            && newItem.JoinedGroups is CustomObservableImpl<ArtistsGroup> implA)
         {
-            newItem.JoinedGroups.Add(this);
+            implA.AddWithoutNotify(this);
         }
         else if (args.Action.HasFlag(NotifyCollectionChangedAction.Remove)
-                 && args.OldItems![0] is Artist removedItem)
+                 && args.OldItems![0] is Artist { JoinedGroups: CustomObservableImpl<ArtistsGroup> implR })
         {
-            removedItem.JoinedGroups.Remove(this);
+            implR.RemoveWithoutNotify(this);
         }
     }
 
@@ -40,7 +41,7 @@ public class ArtistsGroup : Artist
         if (sender is not CustomObservableImpl<Artist> impl) return;
         foreach (var item in impl)
         {
-            item.JoinedGroups.Remove(this);
+            (item.JoinedGroups as CustomObservableImpl<ArtistsGroup>)!.Remove(this);
         }
     }
 }

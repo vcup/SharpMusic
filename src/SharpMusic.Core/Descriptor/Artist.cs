@@ -33,14 +33,16 @@ public class Artist : IDescriptor
     {
         if (args.Action.HasFlag(NotifyCollectionChangedAction.Add)
             && args.NewItems![0] is Album newItem
-            && newItem.Artists.All(i => i.Guid != Guid))
+            && newItem.Artists.All(i => i.Guid != Guid)
+            && newItem.Artists is CustomObservableImpl<Artist> implA)
         {
-            newItem.Artists.Add(this);
+            implA.AddWithoutNotify(this);
         }
         else if (args.Action.HasFlag(NotifyCollectionChangedAction.Remove)
-                 && args.OldItems![0] is Album removedItem)
+                 && args.OldItems![0] is Album removedItem
+                 && removedItem.Artists is CustomObservableImpl<Artist> implR)
         {
-            removedItem.Artists.Remove(this);
+            implR.Remove(this);
         }
     }
 

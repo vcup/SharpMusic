@@ -26,9 +26,9 @@ public class Album : IDescriptor
 
     public string Description { get; set; }
 
-    public List<Artist> Artists { get; }
+    public IList<Artist> Artists { get; }
 
-    public List<Music> Tracks { get; }
+    public IList<Music> Tracks { get; }
 
     public List<Artist> TracksArtists => _trackArtists ??= Tracks
         .SelectMany(i => i.Artists)
