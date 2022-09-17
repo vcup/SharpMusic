@@ -41,7 +41,7 @@ public class ArtistsGroup : Artist
         if (sender is not CustomObservableImpl<Artist> impl) return;
         foreach (var item in impl)
         {
-            (item.JoinedGroups as CustomObservableImpl<ArtistsGroup>)!.Remove(this);
+            (item.JoinedGroups as CustomObservableImpl<ArtistsGroup>)!.RemoveWithoutNotify(this);
         }
     }
 }

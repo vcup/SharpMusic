@@ -39,10 +39,9 @@ public class Artist : IDescriptor
             implA.AddWithoutNotify(this);
         }
         else if (args.Action.HasFlag(NotifyCollectionChangedAction.Remove)
-                 && args.OldItems![0] is Album removedItem
-                 && removedItem.Artists is CustomObservableImpl<Artist> implR)
+                 && args.OldItems![0] is Album { Artists: CustomObservableImpl<Artist> implR })
         {
-            implR.Remove(this);
+            implR.RemoveWithoutNotify(this);
         }
     }
 
@@ -51,7 +50,7 @@ public class Artist : IDescriptor
         if (sender is not CustomObservableImpl<Album> impl) return;
         foreach (var item in impl)
         {
-            item.Artists.Remove(this);
+            (item.Artists as CustomObservableImpl<Artist>)!.RemoveWithoutNotify(this);
         }
     }
 }
