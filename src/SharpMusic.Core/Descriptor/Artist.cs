@@ -12,7 +12,9 @@ public class Artist : IDescriptor
         var album = new CustomObservableImpl<Album>(AlbumsReset);
         album.CollectionChanged += AlbumsAddOrRemoved;
         Albums = album;
-        JoinedGroups = new List<ArtistsGroup>();
+        var joinedGroups = new CustomObservableImpl<ArtistsGroup>(JoinedGroupsReset);
+        joinedGroups.CollectionChanged += JoinedGroupsAddOrRemoved;
+        JoinedGroups = joinedGroups;
     }
 
     public Artist() : this(Guid.NewGuid())
@@ -51,6 +53,31 @@ public class Artist : IDescriptor
         foreach (var item in impl)
         {
             (item.Artists as CustomObservableImpl<Artist>)!.RemoveWithoutNotify(this);
+        }
+    }
+
+    private void JoinedGroupsAddOrRemoved(object? sender, NotifyCollectionChangedEventArgs args)
+    {
+        if (args.Action.HasFlag(NotifyCollectionChangedAction.Add)
+            && args.NewItems![0] is ArtistsGroup newItem
+            && newItem.Members.All(i => i.Guid != Guid)
+            && newItem.Members is CustomObservableImpl<Artist> implA)
+        {
+            implA.AddWithoutNotify(this);
+        }
+        else if (args.Action.HasFlag(NotifyCollectionChangedAction.Remove)
+                 && args.OldItems![0] is ArtistsGroup { Members: CustomObservableImpl<Artist> implR })
+        {
+            implR.RemoveWithoutNotify(this);
+        }
+    }
+
+    private void JoinedGroupsReset(object? sender, NotifyCollectionChangedEventArgs args)
+    {
+        if (sender is not CustomObservableImpl<ArtistsGroup> impl) return;
+        foreach (var item in impl)
+        {
+            (item.Members as CustomObservableImpl<Artist>)!.RemoveWithoutNotify(this);
         }
     }
 }
