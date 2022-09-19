@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
-namespace SharpMusic.Core.Descriptor;
+namespace SharpMusic.Core.Utils;
 
 internal sealed class CustomObservableImpl<T> : ObservableCollection<T>
 {
