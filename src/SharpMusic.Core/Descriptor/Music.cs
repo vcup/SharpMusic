@@ -1,5 +1,4 @@
-﻿using System.Collections.Specialized;
-using SharpMusic.Core.Utils;
+﻿using SharpMusic.Core.Utils;
 
 namespace SharpMusic.Core.Descriptor;
 
@@ -11,9 +10,8 @@ public class Music : IDescriptor
     {
         Guid = guid;
         Names = new List<string>();
-        var albumsIncluded = new CustomObservableImpl<Album>(AlbumsIncludedReset);
-        albumsIncluded.CollectionChanged += AlbumsIncludedAddOrRemoved;
-        AlbumsIncluded = albumsIncluded;
+        AlbumsIncluded = new CustomObservableImpl<Album, Music>(
+            i => (i.Tracks as CustomObservableImpl<Music, Album>)!, this);
         SoundSource = new List<Uri>();
     }
 
@@ -52,29 +50,4 @@ public class Music : IDescriptor
     public IList<Album> AlbumsIncluded { get; }
 
     public IList<Uri> SoundSource { get; }
-
-    private void AlbumsIncludedAddOrRemoved(object? sender, NotifyCollectionChangedEventArgs args)
-    {
-        if (args.Action.HasFlag(NotifyCollectionChangedAction.Add)
-            && args.NewItems![0] is Album newItem
-            && newItem.Tracks.All(i => i.Guid != Guid)
-            && newItem.Tracks is CustomObservableImpl<Music> implA)
-        {
-            implA.AddWithoutNotify(this);
-        }
-        else if (args.Action.HasFlag(NotifyCollectionChangedAction.Remove)
-                 && args.OldItems![0] is Album { Tracks: CustomObservableImpl<Music> implR })
-        {
-            implR.RemoveWithoutNotify(this);
-        }
-    }
-
-    private void AlbumsIncludedReset(object? sender, NotifyCollectionChangedEventArgs args)
-    {
-        if (sender is not CustomObservableImpl<Album> impl) return;
-        foreach (var item in impl)
-        {
-            (item.Tracks as CustomObservableImpl<Music>)!.RemoveWithoutNotify(this);
-        }
-    }
 }
