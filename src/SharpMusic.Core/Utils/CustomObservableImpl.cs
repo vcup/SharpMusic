@@ -24,12 +24,12 @@ internal sealed class CustomObservableImpl<T, TOwnerType> : ObservableCollection
             && args.NewItems![0] is T newItem
             && _linkedImplGetter(newItem).All(i => i.Guid != _instance.Guid))
         {
-            _linkedImplGetter(newItem).AddWithoutNotify(_instance);
+            _linkedImplGetter(newItem).Items.Add(_instance);
         }
         else if (args.Action.HasFlag(NotifyCollectionChangedAction.Remove)
                  && args.OldItems![0] is T oldItem)
         {
-            _linkedImplGetter(oldItem).RemoveWithoutNotify(_instance);
+            _linkedImplGetter(oldItem).Items.Remove(_instance);
         }
     }
 
@@ -37,7 +37,7 @@ internal sealed class CustomObservableImpl<T, TOwnerType> : ObservableCollection
     {
         foreach (var item in this)
         {
-            _linkedImplGetter(item).RemoveWithoutNotify(_instance);
+            _linkedImplGetter(item).Items.Remove(_instance);
         }
 
         base.ClearItems();
