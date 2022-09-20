@@ -1,5 +1,4 @@
 ﻿using SharpMusic.Core.Descriptor;
-using SharpMusic.Core.Descriptor.DescriptorExtension;
 
 namespace SharpMusic.Core.Management;
 
@@ -27,14 +26,8 @@ public class DescriptorManager
             .Concat(_artistsGroups)
             .Concat(_playlists);
 
-    public void Add(IDescriptor item, bool alsoAddUntracked = true)
+    public void Add(IDescriptor item)
     {
-        if (alsoAddUntracked)
-        {
-            Add(item.GetAssociatedDescriptors()
-                .ExceptBy(GetAllDescriptor().Select(i => i.Guid), i => i.Guid));
-        }
-
         switch (item)
         {
             case Music music:
@@ -59,9 +52,28 @@ public class DescriptorManager
 
     public void Add(IEnumerable<IDescriptor> items)
     {
-        foreach (var item in items)
+        foreach (var item in items.ExceptBy(GetAllDescriptor().Select(i => i.Guid), i => i.Guid))
         {
-            Add(item);
+            switch (item)
+            {
+                case Music music:
+                    _musics.Add(music);
+                    break;
+                case Album album:
+                    _albums.Add(album);
+                    break;
+                case ArtistsGroup artistGroup:
+                    _artistsGroups.Add(artistGroup);
+                    break;
+                case Artist artist:
+                    _artists.Add(artist);
+                    break;
+                case Playlist playlist:
+                    _playlists.Add(playlist);
+                    break;
+                default:
+                    throw new ArgumentException();
+            }
         }
     }
 
