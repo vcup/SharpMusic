@@ -2,19 +2,23 @@
 
 public abstract class DescriptorProviderBase : IDisposable
 {
-    protected bool IsDisposed;
+    internal readonly bool UseAsyncMethod;
     protected readonly DescriptorManager Manager;
 
-    public DescriptorProviderBase(DescriptorManager manager)
+    public DescriptorProviderBase(DescriptorManager manager, bool useAsyncMethod = true)
     {
         Manager = manager;
+        UseAsyncMethod = useAsyncMethod;
     }
 
-    public abstract void Execute();
-
-    public virtual async Task ExecuteAsync()
+    public virtual void Execute()
     {
-        await Task.Run(Execute);
+        throw new NotImplementedException();
+    }
+
+    public virtual Task ExecuteAsync()
+    {
+        throw new NotImplementedException();
     }
 
     protected void Dispose(bool disposing)
@@ -30,5 +34,8 @@ public abstract class DescriptorProviderBase : IDisposable
     public void Dispose()
     {
         Dispose(true);
+        GC.SuppressFinalize(this);
     }
+
+    public bool IsDisposed { get; protected set; }
 }
