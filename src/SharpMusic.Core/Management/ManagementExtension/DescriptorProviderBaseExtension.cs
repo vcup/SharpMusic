@@ -1,3 +1,5 @@
+using System.Reflection;
+
 namespace SharpMusic.Core.Management.ManagementExtension;
 
 public static class DescriptorProviderBaseExtension
@@ -16,5 +18,17 @@ public static class DescriptorProviderBaseExtension
                 provider.Execute();
             }
         }
+    }
+
+    public static DescriptorProviderBase? ActiveProviderFrom(this DescriptorManager manager, string path)
+    {
+        var assembly = Assembly.LoadFile(path);
+        var type = assembly.GetTypes().FirstOrDefault(i => i.IsAssignableTo(typeof(DescriptorProviderBase)));
+        if (type is null)
+        {
+            return null;
+        }
+        
+        return Activator.CreateInstance(type, manager) as DescriptorProviderBase;
     }
 }
