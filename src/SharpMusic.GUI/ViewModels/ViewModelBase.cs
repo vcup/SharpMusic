@@ -1,8 +1,7 @@
 ﻿using ReactiveUI;
 
-namespace SharpMusic.GUI.ViewModels
+namespace SharpMusic.GUI.ViewModels;
+
+public class ViewModelBase : ReactiveObject
 {
-    public class ViewModelBase : ReactiveObject
-    {
-    }
 }

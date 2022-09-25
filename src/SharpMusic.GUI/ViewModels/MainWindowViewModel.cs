@@ -1,7 +1,6 @@
-﻿namespace SharpMusic.GUI.ViewModels
+﻿namespace SharpMusic.GUI.ViewModels;
+
+public class MainWindowViewModel : ViewModelBase
 {
-    public class MainWindowViewModel : ViewModelBase
-    {
-        public string Greeting => "Welcome to Avalonia!";
-    }
+    public string Greeting => "Welcome to Avalonia!";
 }

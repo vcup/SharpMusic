@@ -1,12 +1,11 @@
 using Avalonia.Controls;
 
-namespace SharpMusic.GUI.Views
+namespace SharpMusic.GUI.Views;
+
+public partial class MainWindow : Window
 {
-    public partial class MainWindow : Window
+    public MainWindow()
     {
-        public MainWindow()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }
