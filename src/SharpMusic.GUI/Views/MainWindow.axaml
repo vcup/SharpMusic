@@ -8,9 +8,11 @@
         Title="SharpMusic"
         Background="#a0ffffff"
         TransparencyLevelHint="AcrylicBlur"
+        ExtendClientAreaChromeHints="NoChrome"
         ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaTitleBarHeightHint="595"
-        Width="940" Height="595">
+        ExtendClientAreaTitleBarHeightHint="596"
+        Width="940" Height="595"
+        MinWidth="940" MinHeight="595">
 
     <Design.DataContext>
         <vm:MainWindowViewModel/>
