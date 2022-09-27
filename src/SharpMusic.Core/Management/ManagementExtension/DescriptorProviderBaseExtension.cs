@@ -28,7 +28,7 @@ public static class DescriptorProviderBaseExtension
         {
             return null;
         }
-        
+
         return Activator.CreateInstance(type, manager) as DescriptorProviderBase;
     }
 }

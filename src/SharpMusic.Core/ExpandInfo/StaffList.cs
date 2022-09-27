@@ -8,7 +8,7 @@ public class StaffList : List<TrackParticipants>
     {
         SourceAlbum = album;
     }
-    
+
     public StaffList(Album album, IEnumerable<TrackParticipants> tracksParticipants)
         : base(tracksParticipants)
     {

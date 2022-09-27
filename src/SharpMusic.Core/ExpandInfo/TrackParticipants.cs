@@ -10,7 +10,8 @@ public class TrackParticipants : Dictionary<Artist, StaffContributionType>
         SourceAlbum = sourceAlbum;
     }
 
-    public TrackParticipants(Music sourceMusic, Album sourceAlbum, IEnumerable<KeyValuePair<Artist, StaffContributionType>> collection)
+    public TrackParticipants(
+        Music sourceMusic, Album sourceAlbum, IEnumerable<KeyValuePair<Artist, StaffContributionType>> collection)
         : base(collection)
     {
         SourceMusic = sourceMusic;
