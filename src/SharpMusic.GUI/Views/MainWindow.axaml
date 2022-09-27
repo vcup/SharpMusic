@@ -12,7 +12,9 @@
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaTitleBarHeightHint="596"
         Width="940" Height="595"
-        MinWidth="940" MinHeight="595">
+        MinWidth="940" MinHeight="595"
+        CanResize="False"
+        >
 
     <Design.DataContext>
         <vm:MainWindowViewModel/>
