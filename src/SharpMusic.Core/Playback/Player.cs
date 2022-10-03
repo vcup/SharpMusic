@@ -96,6 +96,7 @@ public class Player
 
     public IDisposable Open(Uri uri)
     {
+        _waveSource?.Dispose();
         var waveSource = CodecFactory.Instance
             .GetCodec(uri)
             .ToMono();
