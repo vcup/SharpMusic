@@ -60,6 +60,8 @@ public class Player : IDisposable
     }
 
     public MultiMediaDevice Device { get; set; }
+    
+    public AudioSource? AudioSource { get; private set; }
 
     public IDisposable Open(Uri uri)
     {
@@ -68,6 +70,12 @@ public class Player : IDisposable
             .ToMono();
 
         return _waveSource = waveSource;
+    }
+
+    public IDisposable Open(AudioSource audioSource)
+    {
+        AudioSource = audioSource;
+        return Open(audioSource.Uri);
     }
 
     public void Play()
