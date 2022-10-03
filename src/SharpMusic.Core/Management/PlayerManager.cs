@@ -1,5 +1,4 @@
 ﻿using SharpMusic.Core.Playback;
-using PlaybackState = SharpMusic.Core.Playback.PlaybackState;
 
 namespace SharpMusic.Core.Management;
 

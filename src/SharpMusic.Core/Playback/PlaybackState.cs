@@ -1,6 +1,5 @@
 ﻿namespace SharpMusic.Core.Playback;
 
-[Flags]
 public enum PlaybackState
 {
     Stopped   = 0b0000,
