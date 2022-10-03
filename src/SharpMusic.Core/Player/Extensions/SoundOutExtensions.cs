@@ -9,13 +9,13 @@ public static class SoundOutExtensions
 
     public static bool IsInitialized(this ISoundOut soundOut)
     {
-        if (Cache.TryGetValue(soundOut, out bool flag) && flag)
+        if (Cache.TryGetValue(soundOut, out var flag) && flag)
         {
             return flag;
         }
 
         FieldInfo? field;
-        switch (soundOut)
+        switch (soundOut) // use Reflection to get non-publish status of Initialized
         {
             case DirectSoundOut:
                 field = typeof(DirectSoundOut)
@@ -49,7 +49,6 @@ public static class SoundOutExtensions
         }
 
         flag = (bool)field.GetValue(soundOut)!;
-        Cache[soundOut] = flag;
-        return flag;
+        return Cache[soundOut] = flag;
     }
 }
