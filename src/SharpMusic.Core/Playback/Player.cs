@@ -5,7 +5,7 @@ using SharpMusic.Core.Playback.Extensions;
 
 namespace SharpMusic.Core.Playback;
 
-public class Player : IDisposable
+public class Player
 {
     private readonly ISoundOut _soundOut;
     private IWaveSource? _waveSource;
@@ -133,12 +133,6 @@ public class Player : IDisposable
         _soundOut.Stop();
     }
 
-    public void Dispose()
-    {
-        _soundOut.Dispose();
-        _waveSource?.Dispose();
-    }
-
     private void CheckSoundOutIsInitialized()
     {
         if (_soundOut.IsInitialized()) return;
@@ -150,5 +144,11 @@ public class Player : IDisposable
         {
             throw new InvalidOperationException(); // TODO: Add description
         }
+    }
+
+    ~Player()
+    {
+        _soundOut.Dispose();
+        _waveSource?.Dispose();
     }
 }
