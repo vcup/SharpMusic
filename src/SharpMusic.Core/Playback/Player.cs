@@ -1,9 +1,9 @@
 ﻿using CSCore;
 using CSCore.Codecs;
 using CSCore.SoundOut;
-using SharpMusic.Core.Player.Extensions;
+using SharpMusic.Core.Playback.Extensions;
 
-namespace SharpMusic.Core.Player;
+namespace SharpMusic.Core.Playback;
 
 public class Player : IDisposable
 {

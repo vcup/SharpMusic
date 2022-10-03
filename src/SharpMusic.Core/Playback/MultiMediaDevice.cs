@@ -3,7 +3,7 @@ using CSCore.CoreAudioAPI;
 using CSCore.DirectSound;
 using CSCore.SoundOut;
 
-namespace SharpMusic.Core.Player;
+namespace SharpMusic.Core.Playback;
 
 public class MultiMediaDevice
 {

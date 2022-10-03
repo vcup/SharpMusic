@@ -1,4 +1,4 @@
-﻿namespace SharpMusic.Core.Player;
+﻿namespace SharpMusic.Core.Playback;
 
 public enum MultiMediaDeviceType
 {

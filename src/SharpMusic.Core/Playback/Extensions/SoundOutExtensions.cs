@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using CSCore.SoundOut;
 
-namespace SharpMusic.Core.Player.Extensions;
+namespace SharpMusic.Core.Playback.Extensions;
 
 public static class SoundOutExtensions
 {
