@@ -35,7 +35,38 @@ public class Player : IDisposable
     {
     }
 
-    public PlaybackState PlaybackState => _soundOut.PlaybackState;
+    public PlaybackState PlaybackState
+    {
+        get
+        {
+            return _soundOut.PlaybackState switch
+            {
+                CSCore.SoundOut.PlaybackState.Stopped => PlaybackState.Stopped,
+                CSCore.SoundOut.PlaybackState.Playing => PlaybackState.Playing,
+                CSCore.SoundOut.PlaybackState.Paused => PlaybackState.Paused,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+        set
+        {
+            switch (value)
+            {
+                case PlaybackState.Stopped:
+                    Stop();
+                    break;
+                case PlaybackState.Playing:
+                    Play();
+                    break;
+                case PlaybackState.Paused:
+                    Pause();
+                    break;
+                case PlaybackState.Buffering:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(value), value, null);
+            }
+        }
+    }
 
     public TimeSpan Position
     {

@@ -1,5 +1,5 @@
-﻿using CSCore.SoundOut;
-using SharpMusic.Core.Playback;
+﻿using SharpMusic.Core.Playback;
+using PlaybackState = SharpMusic.Core.Playback.PlaybackState;
 
 namespace SharpMusic.Core.Management;
 
@@ -15,6 +15,14 @@ public class PlayerManager
         AudioSourceList = audioSources.ToList();
     }
 
+    public PlayerManager(IEnumerable<AudioSource> audioSources) : this(new Player(), audioSources)
+    {
+    }
+
+    public PlayerManager() : this(Array.Empty<AudioSource>())
+    {
+    }
+
     public long PlayPositionTicks
     {
         get => _player.Position.Ticks;
@@ -22,6 +30,8 @@ public class PlayerManager
     }
 
     public long PlaybackTimeTicks => _player.Lenght.Ticks;
+
+    public PlaybackState PlaybackState => _player.PlaybackState;
 
     public List<AudioSource> AudioSourceList { get; }
 
