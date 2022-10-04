@@ -19,16 +19,31 @@
     <vm:MainWindowViewModel />
   </Design.DataContext>
   <Panel>
-    <WrapPanel HorizontalAlignment="Right">
-      <WrapPanel.Styles>
-        <Style Selector="Button">
-          <Setter Property="Background" Value="Transparent" />
-          <Setter Property="Width" Value="30" />
-          <Setter Property="Height" Value="30" />
-        </Style>
-      </WrapPanel.Styles>
-      <Button Command="{Binding MinimizeWindowCommand}" Content="-" />
-      <Button Command="{Binding CloseWindowCommand}" Content="X" />
-    </WrapPanel>
+    <StackPanel>
+      <Panel>
+          <Panel.Styles>
+            <Style Selector="Button">
+              <Setter Property="Width" Value="30" />
+              <Setter Property="Height" Value="30" />
+            </Style>
+          </Panel.Styles>
+        <WrapPanel>
+          <Button Command="{Binding PlayPrev}" Content="＜"/>
+          <Button Command="{Binding PlayOrResume}" Content="||"/>
+          <Button Command="{Binding PlayNext}" Content="＞"/>
+        </WrapPanel>
+        <WrapPanel HorizontalAlignment="Right">
+          <WrapPanel.Styles>
+            <Style Selector="Button">
+              <Setter Property="Background" Value="Transparent" />
+            </Style>
+          </WrapPanel.Styles>
+          <Button Command="{Binding MinimizeWindowCommand}" Content="-" />
+          <Button Command="{Binding CloseWindowCommand}" Content="X" />
+        </WrapPanel>
+      </Panel>
+      <ProgressBar Value="{Binding PlayPosition}"
+                   Maximum="{Binding PlaybackTime}"/>
+    </StackPanel>
   </Panel>
 </Window>
