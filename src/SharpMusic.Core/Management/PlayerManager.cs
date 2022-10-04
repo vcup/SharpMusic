@@ -51,21 +51,30 @@ public class PlayerManager
 
     public void PlayOrResume()
     {
-        if (_player.PlaybackState is PlaybackState.Paused)
+        switch (_player.PlaybackState)
         {
-            _player.Resume();
-        }
-
-        if (_player.AudioSource is null)
-        {
-            if (CurrentAudioSource is not null)
-            {
-                _player.Open(CurrentAudioSource);
-            }
-        }
-        else
-        {
-            _player.Play();
+            case PlaybackState.Paused:
+                _player.Resume();
+                return;
+            case PlaybackState.Playing:
+                _player.Pause();
+                return;
+            case PlaybackState.Buffering:
+                return;
+            case PlaybackState.Stopped:
+                if (_player.AudioSource is null)
+                {
+                    if (CurrentAudioSource is null) return;
+                    _player.Open(CurrentAudioSource);
+                    _player.Play();
+                }
+                else
+                {
+                    _player.Play();
+                }
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
     }
 
