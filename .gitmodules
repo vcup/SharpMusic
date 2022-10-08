@@ -1,0 +1,3 @@
+[submodule "references/SDL2-CS"]
+	path = references/SDL2-CS
+	url = git@github.com:flibitijibibo/SDL2-CS.git
