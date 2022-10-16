@@ -57,7 +57,10 @@ public class SoundSource : ISoundSource, IDisposable
     {
         if (!disposing) return;
 
-        avformat_free_context(_formatCtx);
+        fixed (AVFormatContext** formatCtx = &_formatCtx)
+        {
+            avformat_close_input(formatCtx);
+        }
         _isDisposed = true;
     }
 
