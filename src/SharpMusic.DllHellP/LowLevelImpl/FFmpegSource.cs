@@ -4,13 +4,13 @@ using static FFmpeg.AutoGen.ffmpeg;
 
 namespace SharpMusic.DllHellP.LowLevelImpl;
 
-public class SoundSource : ISoundSource, IDisposable
+public class FFmpegSource : ISoundSource, IDisposable
 {
     private readonly unsafe AVFormatContext* _formatCtx;
     private readonly unsafe AVStream* _stream;
     private bool _isDisposed;
 
-    public unsafe SoundSource(Uri uri)
+    public unsafe FFmpegSource(Uri uri)
     {
         Uri = uri;
         int ret;
@@ -64,7 +64,7 @@ public class SoundSource : ISoundSource, IDisposable
         _isDisposed = true;
     }
 
-    ~SoundSource()
+    ~FFmpegSource()
     {
         Dispose();
     }

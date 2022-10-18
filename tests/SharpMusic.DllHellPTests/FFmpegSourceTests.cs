@@ -1,6 +1,6 @@
 ﻿namespace SharpMusic.DllHellPTests;
 
-public class SoundSourceTests
+public class FFmpegSourceTests
 {
     private const string BaseUri = "https://vcup.moe/Share/SharpMusic.DllHellPTests";
     private const string A0 = $@"{BaseUri}/SoundSourceTests`0.flac";
@@ -12,7 +12,7 @@ public class SoundSourceTests
     public void Master_GetProperties_AllIsNotDefault()
     {
         var uri = new Uri(A0);
-        using var source = new SoundSource(uri);
+        using var source = new FFmpegSource(uri);
 
         Assert.AreEqual(uri, source.Uri);
         Assert.Greater(source.Duration.Ticks, 0);
