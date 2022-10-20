@@ -1,9 +1,6 @@
-﻿using System;
-using System.Reactive;
-using System.Threading.Tasks;
+﻿using System.Reactive;
 using ReactiveUI;
 using SharpMusic.Core.Management;
-using SharpMusic.Core.Playback;
 
 namespace SharpMusic.GUI.ViewModels;
 
@@ -13,21 +10,7 @@ public class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
-        _playerManager = new PlayerManager(new []
-        {
-            new AudioSource(new Uri("https://vcup.moe/e/_bazaar records - e^(x+i)＜ 3u.wav")),
-            new AudioSource(new Uri("https://vcup.moe/e/森羅万象 - シンクロ0.wav")),
-        });
-        Task.Run(async () =>
-        {
-            while (true)
-            {
-                await Task.Delay(100);
-                if (_playerManager.PlaybackState is not PlaybackState.Stopped) continue;
-                this.RaisePropertyChanged(nameof(PlayPosition));
-            }
-            // ReSharper disable once FunctionNeverReturns
-        });
+        _playerManager = new PlayerManager();
     }
 
     public ReactiveCommand<Unit, Unit> MinimizeWindowCommand { get; } = ReactiveCommand.Create(() => { });
