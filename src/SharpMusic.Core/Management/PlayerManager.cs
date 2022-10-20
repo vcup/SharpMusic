@@ -22,7 +22,7 @@ public class PlayerManager
 
     public List<Uri> AudioSourceList => throw new NotImplementedException();
 
-    public SoundSource PlayingAudioSource
+    public FFmpegSource PlayingAudioSource
     {
         get => throw new NotImplementedException();
         set => throw new NotImplementedException();
