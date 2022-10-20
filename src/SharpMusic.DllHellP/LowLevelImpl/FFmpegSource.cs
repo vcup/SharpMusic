@@ -1,10 +1,11 @@
-﻿using FFmpeg.AutoGen;
+﻿using System.Collections;
+using FFmpeg.AutoGen;
 using SharpMusic.DllHellP.Abstract;
 using static FFmpeg.AutoGen.ffmpeg;
 
 namespace SharpMusic.DllHellP.LowLevelImpl;
 
-public class FFmpegSource : ISoundSource, IDisposable, IAsyncEnumerable<AVPacket>
+public class FFmpegSource : ISoundSource, IDisposable, IEnumerable<AVPacket>
 {
     private readonly unsafe AVFormatContext* _formatCtx;
     private readonly unsafe AVStream* _stream;
@@ -64,50 +65,47 @@ public class FFmpegSource : ISoundSource, IDisposable, IAsyncEnumerable<AVPacket
         _isDisposed = true;
     }
 
-    public unsafe IAsyncEnumerator<AVPacket> GetAsyncEnumerator(CancellationToken cancellationToken = new())
+    public unsafe IEnumerator<AVPacket> GetEnumerator()
     {
-        return new PacketEnumerator(_formatCtx, cancellationToken);
+        return new PacketEnumerator(_formatCtx);
     }
 
-    private class PacketEnumerator : IAsyncEnumerator<AVPacket>
+    IEnumerator IEnumerable.GetEnumerator()
     {
-        private readonly CancellationToken _token;
+        return GetEnumerator();
+    }
+
+    private class PacketEnumerator : IEnumerator<AVPacket>
+    {
         private readonly unsafe AVFormatContext* _ctx;
         private readonly unsafe AVPacket* _pkt;
 
-        public unsafe PacketEnumerator(AVFormatContext* ctx, CancellationToken token)
+        public unsafe PacketEnumerator(AVFormatContext* ctx)
         {
-            _token = token;
             _ctx = ctx;
             _pkt = av_packet_alloc();
         }
 
-        public unsafe ValueTask DisposeAsync()
+        public unsafe void Dispose()
         {
             av_packet_unref(_pkt);
-            return ValueTask.CompletedTask;
         }
 
-        public async ValueTask<bool> MoveNextAsync()
+        public unsafe bool MoveNext()
         {
-            await Task.Delay(1, _token);
-            if (_token.IsCancellationRequested)
-            {
-                await DisposeAsync();
-                return false;
-            }
-
-            int ret;
-
-            unsafe
-            {
-                ret = av_read_frame(_ctx, _pkt);
-            }
+            var ret = av_read_frame(_ctx, _pkt);
 
             return ret >= 0;
         }
 
         public unsafe AVPacket Current => *_pkt;
+
+        object IEnumerator.Current => Current;
+
+        public void Reset()
+        {
+            throw new NotSupportedException();
+        }
     }
 
     ~FFmpegSource()
