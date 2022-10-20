@@ -4,7 +4,7 @@ using static FFmpeg.AutoGen.ffmpeg;
 
 namespace SharpMusic.DllHellP.LowLevelImpl;
 
-public class FFmpegSource : ISoundSource, IDisposable
+public class FFmpegSource : ISoundSource, IDisposable, IAsyncEnumerable<AVPacket>
 {
     private readonly unsafe AVFormatContext* _formatCtx;
     private readonly unsafe AVStream* _stream;
@@ -62,6 +62,52 @@ public class FFmpegSource : ISoundSource, IDisposable
             avformat_close_input(formatCtx);
         }
         _isDisposed = true;
+    }
+
+    public unsafe IAsyncEnumerator<AVPacket> GetAsyncEnumerator(CancellationToken cancellationToken = new())
+    {
+        return new PacketEnumerator(_formatCtx, cancellationToken);
+    }
+
+    private class PacketEnumerator : IAsyncEnumerator<AVPacket>
+    {
+        private readonly CancellationToken _token;
+        private readonly unsafe AVFormatContext* _ctx;
+        private readonly unsafe AVPacket* _pkt;
+
+        public unsafe PacketEnumerator(AVFormatContext* ctx, CancellationToken token)
+        {
+            _token = token;
+            _ctx = ctx;
+            _pkt = av_packet_alloc();
+        }
+
+        public unsafe ValueTask DisposeAsync()
+        {
+            av_packet_unref(_pkt);
+            return ValueTask.CompletedTask;
+        }
+
+        public async ValueTask<bool> MoveNextAsync()
+        {
+            await Task.Delay(1, _token);
+            if (_token.IsCancellationRequested)
+            {
+                await DisposeAsync();
+                return false;
+            }
+
+            int ret;
+
+            unsafe
+            {
+                ret = av_read_frame(_ctx, _pkt);
+            }
+
+            return ret >= 0;
+        }
+
+        public unsafe AVPacket Current => *_pkt;
     }
 
     ~FFmpegSource()
