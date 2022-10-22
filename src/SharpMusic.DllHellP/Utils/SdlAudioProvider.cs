@@ -37,12 +37,13 @@ public class SdlAudioProvider
                 {
                     processLen = len;
                 }
-                
+
                 Marshal.Copy(_audioBuffer, _index, stream, processLen);
 
                 len -= processLen;
                 stream += processLen;
                 _index += processLen;
+                if (len is 0) break;
             }
         }
     }
