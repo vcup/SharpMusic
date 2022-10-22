@@ -5,7 +5,7 @@ using SharpMusic.DllHellP.Utils;
 
 namespace SharpMusic.DllHellP.LowLevelImpl;
 
-public class SdlAudioOutput : ISoundOutput
+public class SdlAudioOutput : ISoundOutput, IDisposable
 {
     private SdlOutDisposable? _out;
 
@@ -89,5 +89,16 @@ public class SdlAudioOutput : ISoundOutput
         {
             Dispose();
         }
+    }
+
+    public void Dispose()
+    {
+        _out?.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
+    ~SdlAudioOutput()
+    {
+        Dispose();
     }
 }

@@ -46,6 +46,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
     public unsafe long BitRate => _formatCtx->bit_rate;
     public unsafe int BitDepth => _stream->codecpar->bits_per_coded_sample;
     public unsafe int Channels => _stream->codecpar->ch_layout.nb_channels;
+    public unsafe AVChannelLayout ChannelLayout => _stream->codecpar->ch_layout;
     public unsafe int SampleRate => _stream->codecpar->sample_rate;
     public SampleFormat Format { get; }
 

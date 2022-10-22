@@ -1,11 +1,10 @@
 ﻿using System.Collections;
 using FFmpeg.AutoGen;
 using static FFmpeg.AutoGen.ffmpeg;
-using SharpMusic.DllHellP.Abstract;
 
 namespace SharpMusic.DllHellP.LowLevelImpl;
 
-public class FFmpegDecoder : IFFmpegDecoder, IDisposable
+public class FFmpegDecoder : IEnumerable<AVFrame>, IDisposable
 {
     private readonly FFmpegSource _source;
     private readonly unsafe AVCodecContext* _codecCtx;
@@ -45,7 +44,7 @@ public class FFmpegDecoder : IFFmpegDecoder, IDisposable
         return GetEnumerator();
     }
 
-    public unsafe AVCodecContext AvCodecCtx => *_codecCtx;
+    public unsafe AVCodecContext* AvCodecCtx => _codecCtx;
 
     public void Dispose()
     {
