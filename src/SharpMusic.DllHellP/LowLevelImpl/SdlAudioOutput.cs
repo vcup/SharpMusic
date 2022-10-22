@@ -1,6 +1,7 @@
 ﻿using static SDL2.SDL;
 using static SharpMusic.DllHellP.Utils.SdlHelper;
 using SharpMusic.DllHellP.Abstract;
+using SharpMusic.DllHellP.Extensions;
 using SharpMusic.DllHellP.Utils;
 
 namespace SharpMusic.DllHellP.LowLevelImpl;
@@ -25,7 +26,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
         return _out = new SdlOutDisposable(Device, wantSpec);
     }
 
-    public IDisposable Open(IAudioMetaInfo info)
+    public IDisposable Open(IAudioMetaInfo info, SdlAudioProvider audioProvider)
     {
         var wantSpec = new SDL_AudioSpec
         {
@@ -33,7 +34,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
             format = AUDIO_S16SYS, // TODO: use info.Format
             channels = (byte)info.Channels,
             samples = 1024,
-            //callback = ,
+            callback = audioProvider.AudioCallback,
             userdata = IntPtr.Zero,
         };
         return Open(wantSpec);
