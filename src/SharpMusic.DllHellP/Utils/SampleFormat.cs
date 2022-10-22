@@ -2,5 +2,8 @@
 
 public enum SampleFormat
 {
-    None
+    None,
+    Unsigned8,
+    Signed16,
+    Signed32,
 }
