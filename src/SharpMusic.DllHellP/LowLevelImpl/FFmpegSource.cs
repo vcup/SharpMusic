@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using FFmpeg.AutoGen;
 using SharpMusic.DllHellP.Abstract;
+using SharpMusic.DllHellP.Extensions;
 using SharpMusic.DllHellP.Utils;
 using static FFmpeg.AutoGen.ffmpeg;
 
@@ -37,7 +38,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
             break;
         }
 
-        Format = SampleFormat.None; // tmp
+        Format = (*_stream->codecpar).ToSampleFormat();
     }
 
     public Uri Uri { get; }
