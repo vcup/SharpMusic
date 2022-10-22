@@ -5,7 +5,7 @@ using static FFmpeg.AutoGen.ffmpeg;
 
 namespace SharpMusic.DllHellP.LowLevelImpl;
 
-public class FFmpegSource : ISoundSource, IDisposable, IEnumerable<AVPacket>
+public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerable<AVPacket>
 {
     private readonly unsafe AVFormatContext* _formatCtx;
     private readonly unsafe AVStream* _stream;

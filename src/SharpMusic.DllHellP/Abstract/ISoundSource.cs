@@ -6,11 +6,4 @@ public interface ISoundSource
 
     public TimeSpan Duration { get; }
     public TimeSpan Position { get; set; }
-    
-    public long BitRate { get; }
-    public int BitDepth { get; }
-    public int Channels { get; }
-    public int SampleRate { get; }
-    
-    public SampleFormat Format { get; }
 }
