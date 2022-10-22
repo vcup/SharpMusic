@@ -26,6 +26,8 @@ public class FFmpegResampler : IDisposable
             var ret = swr_alloc_set_opts2(swrCtx, pOutChannel, _outFormat, _outSampleRate,
                 &codecCtx->ch_layout, codecCtx->sample_fmt, codecCtx->sample_rate, 0, null);
             if (ret < 0) throw new ArgumentException();
+            ret = swr_init(*swrCtx);
+            if (ret is not 0) throw new ArgumentException();
         }
     }
 
