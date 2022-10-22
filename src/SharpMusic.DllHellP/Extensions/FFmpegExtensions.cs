@@ -19,11 +19,11 @@ public static class FFmpegExtensions
 
     public static SampleFormat ToSampleFormat(this AVCodecParameters parameters)
     {
-        return parameters.format switch
+        return parameters.bits_per_raw_sample switch
         {
-            0 when parameters.bits_per_coded_sample is 8 => SampleFormat.Unsigned8,
-            > 0 when parameters.bits_per_coded_sample is 16 => SampleFormat.Signed16,
-            > 0 when parameters.bits_per_coded_sample is 32 => SampleFormat.Signed32,
+            8 when parameters.format is 0 => SampleFormat.Unsigned8,
+            16 when parameters.format > 0 => SampleFormat.Signed16,
+            32 when parameters.format > 0 => SampleFormat.Signed32,
             _ => throw new ArgumentOutOfRangeException(nameof(parameters), parameters, null)
         };
     }
