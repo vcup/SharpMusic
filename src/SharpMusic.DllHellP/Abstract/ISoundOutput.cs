@@ -6,6 +6,7 @@ public interface ISoundOutput
 {
     public int Volume { get; set; }
     public PlaybackState State { get; set; }
+    public SdlAudioDevice Device { get; }
 
     public void Play();
     public void Pause();
