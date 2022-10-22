@@ -1,4 +1,4 @@
-﻿using SharpMusic.DllHellP.Abstract;
+﻿using SharpMusic.DllHellP.Utils;
 using SharpMusic.DllHellP.LowLevelImpl;
 
 namespace SharpMusic.Core.Management;

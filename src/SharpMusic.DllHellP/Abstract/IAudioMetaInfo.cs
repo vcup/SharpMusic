@@ -1,4 +1,6 @@
-﻿namespace SharpMusic.DllHellP.Abstract;
+﻿using SharpMusic.DllHellP.Utils;
+
+namespace SharpMusic.DllHellP.Abstract;
 
 public interface IAudioMetaInfo
 {

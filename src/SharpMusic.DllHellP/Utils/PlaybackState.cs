@@ -1,4 +1,4 @@
-﻿namespace SharpMusic.DllHellP.Abstract;
+﻿namespace SharpMusic.DllHellP.Utils;
 
 public enum PlaybackState
 {

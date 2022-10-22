@@ -1,4 +1,5 @@
-﻿
+﻿using SharpMusic.DllHellP.Utils;
+
 namespace SharpMusic.DllHellP.Abstract;
 
 public interface ISoundOutput

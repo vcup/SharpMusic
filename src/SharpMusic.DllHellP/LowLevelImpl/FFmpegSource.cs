@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using FFmpeg.AutoGen;
 using SharpMusic.DllHellP.Abstract;
+using SharpMusic.DllHellP.Utils;
 using static FFmpeg.AutoGen.ffmpeg;
 
 namespace SharpMusic.DllHellP.LowLevelImpl;
