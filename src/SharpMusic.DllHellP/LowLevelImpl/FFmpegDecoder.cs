@@ -5,11 +5,11 @@ using SharpMusic.DllHellP.Abstract;
 
 namespace SharpMusic.DllHellP.LowLevelImpl;
 
-public class FFmpegDecoder : IFFmpegDecoder
+public class FFmpegDecoder : IFFmpegDecoder, IDisposable
 {
     private readonly FFmpegSource _source;
     private readonly unsafe AVCodecContext* _codecCtx;
-
+    private bool _isDisposed;
 
     public unsafe FFmpegDecoder(FFmpegSource source)
     {
@@ -31,7 +31,7 @@ public class FFmpegDecoder : IFFmpegDecoder
 
     public unsafe IEnumerator<AVFrame> GetEnumerator()
     {
-        return _source.Select(packet =>
+        return _source.Select(packet => // possible memory leak
         {
             var frame = av_frame_alloc();
             avcodec_send_packet(_codecCtx, &packet);
@@ -46,4 +46,18 @@ public class FFmpegDecoder : IFFmpegDecoder
     }
 
     public unsafe AVCodecContext AvCodecCtx => *_codecCtx;
+
+    public void Dispose()
+    {
+        Dispose(!_isDisposed);
+        GC.SuppressFinalize(this);
+    }
+
+    private unsafe void Dispose(bool disposing)
+    {
+        if (!disposing && _isDisposed) return;
+        _source.Dispose();
+        avcodec_close(_codecCtx);
+        _isDisposed = true;
+    }
 }
