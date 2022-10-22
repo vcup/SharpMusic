@@ -11,6 +11,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
 {
     private readonly unsafe AVFormatContext* _formatCtx;
     private readonly unsafe AVStream* _stream;
+    private readonly int _streamIndex;
     private bool _isDisposed;
 
     public unsafe FFmpegSource(Uri uri)
@@ -34,7 +35,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
         for (var i = 0; i < _formatCtx->nb_streams; i++)
         {
             if (_formatCtx->streams[i]->codecpar->codec_type is not AVMediaType.AVMEDIA_TYPE_AUDIO) continue;
-            _stream = _formatCtx->streams[i];
+            _stream = _formatCtx->streams[_streamIndex = i];
             break;
         }
 
@@ -72,7 +73,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
 
     public unsafe IEnumerator<AVPacket> GetEnumerator()
     {
-        return new PacketEnumerator(_formatCtx);
+        return new PacketEnumerator(_formatCtx, _streamIndex);
     }
 
     IEnumerator IEnumerable.GetEnumerator()
@@ -83,11 +84,13 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
     private class PacketEnumerator : IEnumerator<AVPacket>
     {
         private readonly unsafe AVFormatContext* _ctx;
+        private readonly int _index;
         private readonly unsafe AVPacket* _pkt;
 
-        public unsafe PacketEnumerator(AVFormatContext* ctx)
+        public unsafe PacketEnumerator(AVFormatContext* ctx, int index)
         {
             _ctx = ctx;
+            _index = index;
             _pkt = av_packet_alloc();
         }
 
@@ -99,6 +102,10 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
         public unsafe bool MoveNext()
         {
             var ret = av_read_frame(_ctx, _pkt);
+            while (ret >= 0 && _pkt->stream_index != _index)
+            {
+                ret = av_read_frame(_ctx, _pkt);
+            }
 
             return ret >= 0;
         }
