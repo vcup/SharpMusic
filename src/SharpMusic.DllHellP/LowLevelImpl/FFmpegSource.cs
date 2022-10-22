@@ -49,6 +49,8 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
     public unsafe int SampleRate => _stream->codecpar->sample_rate;
     public SampleFormat Format { get; }
 
+    internal unsafe AVCodecParameters* AvCodecParameters => _stream->codecpar;
+
     public void Dispose()
     {
         Dispose(!_isDisposed);
