@@ -84,6 +84,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
         {
             if (!disposing || _isDisposed) return;
             SDL_CloseAudioDevice(AudioDeviceId);
+            _isDisposed = true;
         }
 
         ~SdlOutDisposable()
