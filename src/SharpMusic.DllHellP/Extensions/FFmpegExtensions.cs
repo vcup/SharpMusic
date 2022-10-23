@@ -23,6 +23,7 @@ public static class FFmpegExtensions
                 ? parameters.bits_per_raw_sample
                 : parameters.bits_per_coded_sample) switch
             {
+                0 => SampleFormat.None,
                 8 when parameters.format is 0 => SampleFormat.Unsigned8,
                 16 when parameters.format > 0 => SampleFormat.Signed16,
                 32 when parameters.format > 0 => SampleFormat.Signed32,
