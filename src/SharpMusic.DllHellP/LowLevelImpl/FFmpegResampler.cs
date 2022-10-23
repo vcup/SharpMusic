@@ -33,6 +33,7 @@ public class FFmpegResampler : IDisposable
 
     public unsafe byte[] ResampleFrame(AVFrame* frame)
     {
+        if (_isDisposed) return Array.Empty<byte>();
         long nbSamples;
         var maxNbSamples = nbSamples = av_rescale_rnd(
             frame->nb_samples, _outSampleRate, _codecCtx->sample_rate, AVRounding.AV_ROUND_UP

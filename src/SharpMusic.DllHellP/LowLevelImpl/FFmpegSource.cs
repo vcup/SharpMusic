@@ -86,6 +86,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
         private readonly unsafe AVFormatContext* _ctx;
         private readonly int _index;
         private readonly unsafe AVPacket* _pkt;
+        private bool _isDisposed;
 
         public unsafe PacketEnumerator(AVFormatContext* ctx, int index)
         {
@@ -94,13 +95,22 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
             _pkt = av_packet_alloc();
         }
 
-        public unsafe void Dispose()
+        public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private unsafe void Dispose(bool disposing)
+        {
+            if (!disposing && _isDisposed) return;
             av_packet_unref(_pkt);
+            _isDisposed = true;
         }
 
         public unsafe bool MoveNext()
         {
+            if (_isDisposed) return false;
             av_packet_unref(_pkt);
             var ret = av_read_frame(_ctx, _pkt);
             while (ret >= 0 && _pkt->stream_index != _index)

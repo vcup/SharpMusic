@@ -21,11 +21,13 @@ public class SdlAudioProvider
 
     public unsafe void AudioCallback(IntPtr userdata, IntPtr stream, int len)
     {
-        while (len > 0 && _frames.MoveNext())
+        var entry = DateTime.Now;
+        while (len > 0)
         {
-            var frame = _frames.Current;
             if (_index >= _audioBuffer.Length)
             {
+                if (!_frames.MoveNext()) break;
+                var frame = _frames.Current;
                 _audioBuffer = _resampler.ResampleFrame(&frame);
                 _index = 0;
                 Debug.Assert(_audioBuffer.Length is not 0);

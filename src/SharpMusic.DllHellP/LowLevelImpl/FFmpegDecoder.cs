@@ -55,7 +55,7 @@ public class FFmpegDecoder : IEnumerable<AVFrame>, IDisposable
 
         public unsafe bool MoveNext()
         {
-            if (!_packets.MoveNext()) return false;
+            if (_isDisposed || !_packets.MoveNext()) return false;
             var pkt = _packets.Current;
             var ret = avcodec_send_packet(_codecCtx, &pkt);
             if (ret < 0) return false;
@@ -72,7 +72,7 @@ public class FFmpegDecoder : IEnumerable<AVFrame>, IDisposable
 
         object IEnumerator.Current => Current;
 
-        public unsafe void Dispose()
+        public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
