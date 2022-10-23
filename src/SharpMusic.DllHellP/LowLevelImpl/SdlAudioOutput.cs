@@ -9,6 +9,7 @@ namespace SharpMusic.DllHellP.LowLevelImpl;
 public class SdlAudioOutput : ISoundOutput, IDisposable
 {
     private SdlOutDisposable? _out;
+    private bool _isDisposed;
 
     public SdlAudioOutput()
     {
@@ -66,6 +67,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
     {
         public readonly SDL_AudioSpec Spec;
         public readonly uint AudioDeviceId;
+        private bool _isDisposed;
 
         public SdlOutDisposable(SdlAudioDevice? device, SDL_AudioSpec wantSpec)
         {
@@ -80,10 +82,8 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
 
         private void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                SDL_CloseAudioDevice(AudioDeviceId);
-            }
+            if (!disposing || _isDisposed) return;
+            SDL_CloseAudioDevice(AudioDeviceId);
         }
 
         ~SdlOutDisposable()
@@ -94,8 +94,14 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
 
     public void Dispose()
     {
-        _out?.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (!disposing || _isDisposed) return;
+        _out?.Dispose();
+        _isDisposed = true;
     }
 
     ~SdlAudioOutput()
