@@ -16,7 +16,10 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
         Device = new SdlAudioDevice();
     }
 
+    public bool IsMute { get; set; }
     public int Volume { get; set; }
+    public int MinVolume { get; }
+    public int MaxVolume { get; }
     public PlaybackState State { get; set; }
     public SdlAudioDevice Device { get; init; }
     public SDL_AudioSpec Spec => _out?.Spec ?? new SDL_AudioSpec();

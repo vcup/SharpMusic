@@ -4,7 +4,10 @@ namespace SharpMusic.DllHellP.Abstract;
 
 public interface ISoundOutput
 {
+    public bool IsMute { get; set; }
     public int Volume { get; set; }
+    public int MinVolume { get; }
+    public int MaxVolume { get; }
     public PlaybackState State { get; set; }
     public SdlAudioDevice Device { get; }
 
