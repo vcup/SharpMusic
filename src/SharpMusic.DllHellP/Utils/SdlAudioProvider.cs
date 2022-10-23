@@ -21,7 +21,6 @@ public class SdlAudioProvider
 
     public unsafe void AudioCallback(IntPtr userdata, IntPtr stream, int len)
     {
-        var entry = DateTime.Now;
         while (len > 0)
         {
             if (_index >= _audioBuffer.Length)

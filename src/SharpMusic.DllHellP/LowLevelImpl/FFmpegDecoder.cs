@@ -1,5 +1,5 @@
 ﻿using System.Collections;
-using System.ComponentModel;
+using System.Diagnostics;
 using FFmpeg.AutoGen;
 using static FFmpeg.AutoGen.ffmpeg;
 
@@ -17,16 +17,10 @@ public class FFmpegDecoder : IEnumerable<AVFrame>, IDisposable
         var codec = avcodec_find_decoder(_source.AvCodecParameters->codec_id);
         _codecCtx = avcodec_alloc_context3(codec);
         var ret = avcodec_parameters_to_context(_codecCtx, _source.AvCodecParameters);
-        if (ret != 0)
-        {
-            throw new ArgumentException();
-        }
+        Debug.Assert(ret is 0);
 
         ret = avcodec_open2(_codecCtx, codec, null);
-        if (ret < 0)
-        {
-            throw new ArgumentException();
-        }
+        Debug.Assert(ret >= 0);
     }
 
     public unsafe IEnumerator<AVFrame> GetEnumerator()
