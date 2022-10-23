@@ -101,6 +101,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
 
         public unsafe bool MoveNext()
         {
+            av_packet_unref(_pkt);
             var ret = av_read_frame(_ctx, _pkt);
             while (ret >= 0 && _pkt->stream_index != _index)
             {
