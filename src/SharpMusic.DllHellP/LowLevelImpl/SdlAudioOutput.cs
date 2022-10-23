@@ -1,4 +1,7 @@
-﻿using static SDL2.SDL;
+﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
+using FFmpeg.AutoGen;
+using static SDL2.SDL;
 using static SharpMusic.DllHellP.Utils.SdlHelper;
 using SharpMusic.DllHellP.Abstract;
 using SharpMusic.DllHellP.Extensions;
@@ -14,12 +17,13 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
     public SdlAudioOutput()
     {
         Device = new SdlAudioDevice();
+        Volume = MaxVolume;
     }
 
     public bool IsMute { get; set; }
     public int Volume { get; set; }
-    public int MinVolume { get; }
-    public int MaxVolume { get; }
+    public int MinVolume => 0;
+    public int MaxVolume => SDL_MIX_MAXVOLUME;
     public PlaybackState State { get; set; }
     public SdlAudioDevice Device { get; init; }
     public SDL_AudioSpec Spec => _out?.Spec ?? new SDL_AudioSpec();
@@ -30,15 +34,16 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
         return _out = new SdlOutDisposable(Device, wantSpec);
     }
 
-    public IDisposable Open(IAudioMetaInfo info, SdlAudioProvider audioProvider)
+    public IDisposable Open(IAudioMetaInfo info, IEnumerable<AVFrame> frames, FFmpegResampler resampler)
     {
+        var provider = new SdlAudioProvider(this, frames, resampler);
         var wantSpec = new SDL_AudioSpec
         {
             freq = info.SampleRate,
             format = info.Format.ToSdlFmt(),
             channels = (byte)info.Channels,
             samples = 1024,
-            callback = audioProvider.AudioCallback,
+            callback = provider.AudioCallback,
             userdata = IntPtr.Zero,
         };
         return Open(wantSpec);
@@ -93,6 +98,66 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
         ~SdlOutDisposable()
         {
             Dispose();
+        }
+    }
+
+    private class SdlAudioProvider
+    {
+        private readonly SdlAudioOutput _owner;
+        private readonly IEnumerator<AVFrame> _frames;
+        private readonly FFmpegResampler _resampler;
+        private byte[] _audioBuffer;
+        private int _index;
+
+        public SdlAudioProvider(SdlAudioOutput owner, IEnumerable<AVFrame> frames, FFmpegResampler resampler)
+        {
+            _owner = owner;
+            _frames = frames.GetEnumerator();
+            _resampler = resampler;
+            _audioBuffer = Array.Empty<byte>();
+        }
+
+        public unsafe void AudioCallback(IntPtr userdata, IntPtr stream, int len)
+        {
+            while (len > 0)
+            {
+                if (_index >= _audioBuffer.Length)
+                {
+                    if (!_frames.MoveNext()) break;
+                    var frame = _frames.Current;
+                    _audioBuffer = _resampler.ResampleFrame(&frame);
+                    _index = 0;
+                    Debug.Assert(_audioBuffer.Length is not 0);
+                }
+
+                var processLen = _audioBuffer.Length - _index;
+                if (processLen > len)
+                {
+                    processLen = len;
+                }
+
+                if (_owner.IsMute)
+                {
+                    ExternMethod.RtlZeroMemory(stream, processLen);
+                }
+                else if (_owner.Volume is SDL_MIX_MAXVOLUME)
+                {
+                    Marshal.Copy(_audioBuffer, _index, stream, processLen);
+                }
+                else
+                {
+                    fixed (byte* data = _audioBuffer)
+                    {
+                        ExternMethod.RtlZeroMemory(stream, processLen);
+                        SDL_MixAudioFormat(stream, (IntPtr)(data + _index), AUDIO_S16, (uint)processLen, _owner.Volume);
+                    }
+                }
+
+
+                len -= processLen;
+                stream += processLen;
+                _index += processLen;
+            }
         }
     }
 
