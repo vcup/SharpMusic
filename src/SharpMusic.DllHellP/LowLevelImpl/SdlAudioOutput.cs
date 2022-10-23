@@ -98,6 +98,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
 
     public void Dispose()
     {
+        Dispose(true);
         GC.SuppressFinalize(this);
     }
 
