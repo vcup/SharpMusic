@@ -13,12 +13,13 @@ using var resampler =
 using var device = new SdlAudioOutput();
 using var @out = device.Open(source, decoder, resampler);
 device.Play();
+device.VolumeByPercent = 50;
+Debug.Assert(device.Volume is 64);
 
 Console.ReadLine();
 device.IsMute = true;
 Console.ReadLine();
 device.IsMute = false;
-device.Volume = 64;
 Console.ReadLine();
 device.Dispose();
 

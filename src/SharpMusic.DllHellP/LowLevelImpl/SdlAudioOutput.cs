@@ -25,6 +25,13 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
 
     public bool IsMute { get; set; }
     public int Volume { get; set; }
+
+    public int VolumeByPercent
+    {
+        get => (int)(Volume / (MaxVolume / 100.0));
+        set => Volume = (int)(value * (MaxVolume / 100.0));
+    }
+
     public int MinVolume => 0;
     public int MaxVolume => SDL_MIX_MAXVOLUME;
     public PlaybackState State { get; set; }
