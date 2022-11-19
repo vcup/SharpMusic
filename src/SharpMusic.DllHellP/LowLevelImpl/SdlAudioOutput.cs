@@ -1,8 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
-using FFmpeg.AutoGen;
 using static SDL2.SDL;
-using static SharpMusic.DllHellP.Utils.SdlHelper;
 using SharpMusic.DllHellP.Abstract;
 using SharpMusic.DllHellP.Extensions;
 using SharpMusic.DllHellP.Utils;
@@ -19,7 +17,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
 
     public SdlAudioOutput()
     {
-        Device = new SdlAudioDevice();
+        Device = null!;
         Volume = MaxVolume;
     }
 
@@ -94,7 +92,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
 
         public SdlOutDisposable(SdlAudioDevice? device, SDL_AudioSpec wantSpec)
         {
-            AudioDeviceId = SDL_OpenAudioDevice(device?.ToPtr(), 0, ref wantSpec, out Spec, 0);
+            AudioDeviceId = SDL_OpenAudioDevice(device?.DeviceName, 0, ref wantSpec, out Spec, 0);
         }
 
         public void Dispose()
