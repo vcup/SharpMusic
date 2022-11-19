@@ -33,6 +33,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
         ret = avformat_find_stream_info(_formatCtx, null);
         if (ret < 0)
         {
+            throw new ArgumentException($@"Could not find stream information from {uri.OriginalString}", nameof(uri));
         }
 
         for (var i = 0; i < _formatCtx->nb_streams; i++)
