@@ -34,13 +34,14 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
 
     public int MinVolume => 0;
     public int MaxVolume => SDL_MIX_MAXVOLUME;
-    public PlaybackState State { get; set; }
+    public PlaybackState State { get; private set; }
     public SdlAudioDevice Device { get; init; }
     public SDL_AudioSpec Spec => _out?.Spec ?? new SDL_AudioSpec();
 
     public IDisposable Open(SDL_AudioSpec wantSpec)
     {
         _out?.Dispose();
+        State = PlaybackState.Stopped;
         return _out = new SdlOutDisposable(Device, wantSpec);
     }
 
@@ -62,23 +63,27 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
     public void Play()
     {
         Resume();
+        State = PlaybackState.Playing;
     }
 
     public void Pause()
     {
         if (_out is null) return;
         SDL_PauseAudioDevice(_out.AudioDeviceId, 1);
+        State = PlaybackState.Paused;
     }
 
     public void Resume()
     {
         if (_out is null) return;
         SDL_PauseAudioDevice(_out.AudioDeviceId, 0);
+        State = PlaybackState.Playing;
     }
 
     public void Stop()
     {
         _out?.Dispose();
+        State = PlaybackState.Stopped;
     }
 
     private class SdlOutDisposable : IDisposable

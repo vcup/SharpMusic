@@ -8,7 +8,7 @@ public interface ISoundOutput
     public int Volume { get; set; }
     public int MinVolume { get; }
     public int MaxVolume { get; }
-    public PlaybackState State { get; set; }
+    public PlaybackState State { get; }
     public SdlAudioDevice Device { get; }
 
     public void Play();
