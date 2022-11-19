@@ -3,9 +3,9 @@ using SharpMusic.DllHellP.LowLevelImpl;
 
 namespace SharpMusic.Core.Management;
 
-public class PlayerManager
+public class PlaybackManager
 {
-    public PlayerManager()
+    public PlaybackManager()
     {
         throw new NotImplementedException();
     }

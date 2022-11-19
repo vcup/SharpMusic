@@ -6,30 +6,30 @@ namespace SharpMusic.GUI.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
-    private readonly PlayerManager _playerManager;
+    private readonly PlaybackManager _playbackManager;
 
     public MainWindowViewModel()
     {
-        _playerManager = new PlayerManager();
+        _playbackManager = new PlaybackManager();
     }
 
     public ReactiveCommand<Unit, Unit> MinimizeWindowCommand { get; } = ReactiveCommand.Create(() => { });
 
     public ReactiveCommand<Unit, Unit> CloseWindowCommand { get; } = ReactiveCommand.Create(() => { });
 
-    public void PlayOrResume() => _playerManager.PlayOrResume();
+    public void PlayOrResume() => _playbackManager.PlayOrResume();
 
-    public void Stop() => _playerManager.Stop();
+    public void Stop() => _playbackManager.Stop();
 
-    public void PlayNext() => _playerManager.PlayNext();
+    public void PlayNext() => _playbackManager.PlayNext();
 
-    public void PlayPrev() => _playerManager.PlayPrev();
+    public void PlayPrev() => _playbackManager.PlayPrev();
 
     public long PlayPosition
     {
-        get => _playerManager.PlayPositionTicks;
-        set => _playerManager.PlayPositionTicks = value;
+        get => _playbackManager.PlayPositionTicks;
+        set => _playbackManager.PlayPositionTicks = value;
     }
 
-    public long PlaybackTime => _playerManager.PlaybackTimeTicks;
+    public long PlaybackTime => _playbackManager.PlaybackTimeTicks;
 }
