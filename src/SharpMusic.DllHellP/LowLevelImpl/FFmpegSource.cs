@@ -7,7 +7,10 @@ using static FFmpeg.AutoGen.ffmpeg;
 
 namespace SharpMusic.DllHellP.LowLevelImpl;
 
-public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerable<AVPacket>
+/// <summary>
+/// provide pointer of <see cref="AVPacket"/> and some meta information of the stream
+/// </summary>
+public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerable<IntPtr>
 {
     private readonly unsafe AVFormatContext* _formatCtx;
     private readonly unsafe AVStream* _stream;
@@ -71,7 +74,11 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
         _isDisposed = true;
     }
 
-    public unsafe IEnumerator<AVPacket> GetEnumerator()
+    /// <summary>
+    /// get enumerator to iteration <see cref="IntPtr"/> of <see cref="AVPacket"/>
+    /// </summary>
+    /// <returns><see cref="IntPtr"/> point to <see cref="AVPacket"/></returns>
+    public unsafe IEnumerator<IntPtr> GetEnumerator()
     {
         return new PacketEnumerator(_formatCtx, _streamIndex);
     }
@@ -81,7 +88,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
         return GetEnumerator();
     }
 
-    private class PacketEnumerator : IEnumerator<AVPacket>
+    private class PacketEnumerator : IEnumerator<IntPtr>
     {
         private readonly unsafe AVFormatContext* _ctx;
         private readonly int _index;
@@ -121,7 +128,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
             return ret >= 0;
         }
 
-        public unsafe AVPacket Current => *_pkt;
+        public unsafe IntPtr Current => (IntPtr)_pkt;
 
         object IEnumerator.Current => Current;
 

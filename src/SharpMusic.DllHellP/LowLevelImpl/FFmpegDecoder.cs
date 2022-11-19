@@ -5,7 +5,10 @@ using static FFmpeg.AutoGen.ffmpeg;
 
 namespace SharpMusic.DllHellP.LowLevelImpl;
 
-public class FFmpegDecoder : IEnumerable<AVFrame>, IDisposable
+/// <summary>
+/// decode <see cref="AVPacket"/> from <see cref="FFmpegSource"/>, provide pointer of <see cref="AVFrame"/>
+/// </summary>
+public class FFmpegDecoder : IEnumerable<IntPtr>, IDisposable
 {
     private readonly FFmpegSource _source;
     private readonly unsafe AVCodecContext* _codecCtx;
@@ -23,7 +26,12 @@ public class FFmpegDecoder : IEnumerable<AVFrame>, IDisposable
         Debug.Assert(ret >= 0);
     }
 
-    public unsafe IEnumerator<AVFrame> GetEnumerator()
+    
+    /// <summary>
+    /// get enumerator to iteration <see cref="IntPtr"/> of <see cref="AVFrame"/>
+    /// </summary>
+    /// <returns><see cref="IntPtr"/> point to <see cref="AVPacket"/></returns>
+    public unsafe IEnumerator<IntPtr> GetEnumerator()
     {
         return new Enumerator(_codecCtx, _source.GetEnumerator());
     }
@@ -33,14 +41,14 @@ public class FFmpegDecoder : IEnumerable<AVFrame>, IDisposable
         return GetEnumerator();
     }
     
-    private class Enumerator : IEnumerator<AVFrame>
+    private class Enumerator : IEnumerator<IntPtr>
     {
         private readonly unsafe AVCodecContext* _codecCtx;
-        private readonly IEnumerator<AVPacket> _packets;
+        private readonly IEnumerator<IntPtr> _packets;
         private readonly unsafe AVFrame* _frame;
         private bool _isDisposed;
 
-        public unsafe Enumerator(AVCodecContext* codecCtx, IEnumerator<AVPacket> packets)
+        public unsafe Enumerator(AVCodecContext* codecCtx, IEnumerator<IntPtr> packets)
         {
             _codecCtx = codecCtx;
             _packets = packets;
@@ -51,7 +59,7 @@ public class FFmpegDecoder : IEnumerable<AVFrame>, IDisposable
         {
             if (_isDisposed || !_packets.MoveNext()) return false;
             var pkt = _packets.Current;
-            var ret = avcodec_send_packet(_codecCtx, &pkt);
+            var ret = avcodec_send_packet(_codecCtx, (AVPacket*)pkt);
             if (ret < 0) return false;
             ret = avcodec_receive_frame(_codecCtx, _frame);
             return ret >= 0;
@@ -62,7 +70,7 @@ public class FFmpegDecoder : IEnumerable<AVFrame>, IDisposable
             _packets.Reset();
         }
 
-        public unsafe AVFrame Current => *_frame;
+        public unsafe IntPtr Current => (IntPtr)_frame;
 
         object IEnumerator.Current => Current;
 
@@ -85,7 +93,10 @@ public class FFmpegDecoder : IEnumerable<AVFrame>, IDisposable
         }
     }
 
-    public unsafe AVCodecContext* AvCodecCtx => _codecCtx;
+    /// <summary>
+    /// pointer to <see cref="AVCodecContext"/>
+    /// </summary>
+    public unsafe IntPtr AvCodecCtx => (IntPtr)_codecCtx;
 
     public void Dispose()
     {

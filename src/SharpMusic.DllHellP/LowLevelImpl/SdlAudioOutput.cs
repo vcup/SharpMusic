@@ -9,6 +9,9 @@ using SharpMusic.DllHellP.Utils;
 
 namespace SharpMusic.DllHellP.LowLevelImpl;
 
+/// <summary>
+/// handle SDL Audio Subsystem resource, provide volume adjust playback control etc.
+/// </summary>
 public class SdlAudioOutput : ISoundOutput, IDisposable
 {
     private SdlOutDisposable? _out;
@@ -34,7 +37,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
         return _out = new SdlOutDisposable(Device, wantSpec);
     }
 
-    public IDisposable Open(IAudioMetaInfo info, IEnumerable<AVFrame> frames, FFmpegResampler resampler)
+    public IDisposable Open(IAudioMetaInfo info, IEnumerable<IntPtr> frames, FFmpegResampler resampler)
     {
         var provider = new SdlAudioProvider(this, frames, resampler);
         var wantSpec = new SDL_AudioSpec
@@ -101,15 +104,21 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
         }
     }
 
+    /// <summary>
+    /// combine Frame provider (like <see cref="FFmpegDecoder"/>) and <see cref="FFmpegResampler"/> for provider sound wave to SDL Audio Subsystem
+    /// </summary>
     private class SdlAudioProvider
     {
         private readonly SdlAudioOutput _owner;
-        private readonly IEnumerator<AVFrame> _frames;
+        private readonly IEnumerator<IntPtr> _frames;
         private readonly FFmpegResampler _resampler;
         private byte[] _audioBuffer;
         private int _index;
 
-        public SdlAudioProvider(SdlAudioOutput owner, IEnumerable<AVFrame> frames, FFmpegResampler resampler)
+        /// <param name="owner">Provider want know owner state for adjust volume and call <see cref="SdlAudioOutput.Stop"/> when end of stream</param>
+        /// <param name="frames">normally assign <see cref="FFmpegDecoder"/></param>
+        /// <param name="resampler"></param>
+        public SdlAudioProvider(SdlAudioOutput owner, IEnumerable<IntPtr> frames, FFmpegResampler resampler)
         {
             _owner = owner;
             _frames = frames.GetEnumerator();
@@ -124,8 +133,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
                 if (_index >= _audioBuffer.Length)
                 {
                     if (!_frames.MoveNext()) break;
-                    var frame = _frames.Current;
-                    _audioBuffer = _resampler.ResampleFrame(&frame);
+                    _audioBuffer = _resampler.ResampleFrame(_frames.Current);
                     _index = 0;
                     Debug.Assert(_audioBuffer.Length is not 0);
                 }
