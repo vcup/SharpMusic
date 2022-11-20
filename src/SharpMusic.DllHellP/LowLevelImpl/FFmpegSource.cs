@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using FFmpeg.AutoGen;
 using SharpMusic.DllHellP.Abstract;
+using SharpMusic.DllHellP.Exceptions;
 using SharpMusic.DllHellP.Extensions;
 using SharpMusic.DllHellP.Utils;
 using static FFmpeg.AutoGen.ffmpeg;
@@ -126,7 +127,11 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
                 ret = av_read_frame(_ctx, _pkt);
             }
 
-            return ret >= 0;
+            if (ret >= 0) return true;
+
+            if (ret != AVERROR_EOF) throw new FFmpegReadingFrameException(ret);
+            
+            return false;
         }
 
         public unsafe IntPtr Current => (IntPtr)_pkt;
