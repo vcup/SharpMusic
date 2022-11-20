@@ -26,7 +26,6 @@ public class FFmpegDecoder : IEnumerable<IntPtr>, IDisposable
         Debug.Assert(ret >= 0);
     }
 
-    
     /// <summary>
     /// get enumerator to iteration <see cref="IntPtr"/> of <see cref="AVFrame"/>
     /// </summary>
@@ -40,7 +39,7 @@ public class FFmpegDecoder : IEnumerable<IntPtr>, IDisposable
     {
         return GetEnumerator();
     }
-    
+
     private class Enumerator : IEnumerator<IntPtr>
     {
         private readonly unsafe AVCodecContext* _codecCtx;
