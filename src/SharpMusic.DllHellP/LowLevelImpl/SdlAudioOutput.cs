@@ -103,6 +103,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
         private void Dispose(bool disposing)
         {
             if (!disposing || _isDisposed) return;
+            // WARNING: never call this from AudioCallback, that will stop the thread and any thread for calling this method
             SDL_CloseAudioDevice(AudioDeviceId);
             _isDisposed = true;
         }
@@ -178,8 +179,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
 
             if (len <= 0) return;
             ExternMethod.RtlZeroMemory(stream, len);
-            _frames.Dispose();
-            _owner.Stop();
+            _owner.Pause();
         }
     }
 

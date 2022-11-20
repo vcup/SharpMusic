@@ -14,6 +14,7 @@ public class PlaybackManager
     private FFmpegDecoder? _decoder;
     private FFmpegResampler? _resampler;
     private int _playingIndex;
+    private PlaybackMode _playbackMode;
 
     public PlaybackManager()
     {
@@ -32,7 +33,54 @@ public class PlaybackManager
 
     public PlaybackState PlaybackState => _output.State;
 
-    public PlaybackMode PlaybackMode { get; set; }
+    public PlaybackMode PlaybackMode
+    {
+        get => _playbackMode;
+        set
+        {
+            if (_source is not null)
+            {
+                switch (value)
+                {
+                    case PlaybackMode.LoopAll:
+                        _source.SourceEofEvent -= LoopAllOnSourceEof;
+                        _source.SourceEofEvent += LoopAllOnSourceEof;
+                        break;
+                    case PlaybackMode.Shuffle:
+                        _source.SourceEofEvent -= ShuffleOnSourceEof;
+                        _source.SourceEofEvent += ShuffleOnSourceEof;
+                        break;
+                    case PlaybackMode.LoopSingle:
+                        _source.SourceEofEvent -= LoopSingleOnSourceEof;
+                        _source.SourceEofEvent += LoopSingleOnSourceEof;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(value), value, null);
+                }
+
+                void LoopAllOnSourceEof(FFmpegSource sender)
+                {
+                    PlayNext();
+                }
+
+                void ShuffleOnSourceEof(FFmpegSource sender)
+                {
+                    _playingIndex = Random.Shared.Next(Playlist.Count());
+                    ReOpenCurrentMusic();
+                    PlayOrResume();
+                }
+
+                void LoopSingleOnSourceEof(FFmpegSource sender)
+                {
+                    // TODO: change low level impl for direct back to begin
+                    ReOpenCurrentMusic();
+                    PlayOrResume();
+                }
+            }
+
+            _playbackMode = value;
+        }
+    }
 
     public Playlist Playlist { get; }
 
@@ -103,6 +151,8 @@ public class PlaybackManager
         _resampler =
             new FFmpegResampler(_decoder.AvCodecCtx, _source.Format.ToFmt(), _source.ChannelLayout, _source.SampleRate);
         _output.Open(_source, _decoder, _resampler);
+        // rebinding event
+        PlaybackMode = _playbackMode;
     }
 
     ~PlaybackManager()

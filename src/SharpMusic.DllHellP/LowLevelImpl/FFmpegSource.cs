@@ -82,7 +82,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
     /// <returns><see cref="IntPtr"/> point to <see cref="AVPacket"/></returns>
     public unsafe IEnumerator<IntPtr> GetEnumerator()
     {
-        return new PacketEnumerator(_formatCtx, _streamIndex);
+        return new PacketEnumerator(this, _formatCtx, _streamIndex);
     }
 
     IEnumerator IEnumerable.GetEnumerator()
@@ -90,15 +90,21 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
         return GetEnumerator();
     }
 
+    public delegate void FFmpegSourceEofHandler(FFmpegSource sender);
+
+    public event FFmpegSourceEofHandler SourceEofEvent;
+
     private class PacketEnumerator : IEnumerator<IntPtr>
     {
+        private readonly FFmpegSource _owner;
         private readonly unsafe AVFormatContext* _ctx;
         private readonly int _index;
         private readonly unsafe AVPacket* _pkt;
         private bool _isDisposed;
 
-        public unsafe PacketEnumerator(AVFormatContext* ctx, int index)
+        public unsafe PacketEnumerator(FFmpegSource owner, AVFormatContext* ctx, int index)
         {
+            _owner = owner;
             _ctx = ctx;
             _index = index;
             _pkt = av_packet_alloc();
@@ -124,14 +130,23 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
             var ret = av_read_frame(_ctx, _pkt);
             while (ret >= 0 && _pkt->stream_index != _index)
             {
+                av_packet_unref(_pkt);
                 ret = av_read_frame(_ctx, _pkt);
             }
 
             if (ret >= 0) return true;
 
             if (ret != AVERROR_EOF) throw new FFmpegReadingFrameException(ret);
-            
+
+            // invoke event from another thread because this method may call by AudioCallback, it will block the thread
+            InvokeEventAsync();
+
             return false;
+        }
+
+        private async void InvokeEventAsync()
+        {
+            await Task.Run(() => _owner.SourceEofEvent(_owner));
         }
 
         public unsafe IntPtr Current => (IntPtr)_pkt;
