@@ -84,6 +84,7 @@ public class FFmpegDecoder : IEnumerable<IntPtr>, IDisposable
         {
             if (!disposing || _isDisposed) return;
             av_frame_unref(_frame);
+            _packets.Dispose();
             _isDisposed = true;
         }
 

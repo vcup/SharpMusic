@@ -178,6 +178,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
 
             if (len <= 0) return;
             ExternMethod.RtlZeroMemory(stream, len);
+            _frames.Dispose();
             _owner.Stop();
         }
     }
