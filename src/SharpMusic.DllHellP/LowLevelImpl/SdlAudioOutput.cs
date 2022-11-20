@@ -61,7 +61,6 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
     public void Play()
     {
         Resume();
-        State = PlaybackState.Playing;
     }
 
     public void Pause()

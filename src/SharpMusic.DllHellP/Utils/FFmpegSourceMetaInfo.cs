@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using FFmpeg.AutoGen;
+﻿using FFmpeg.AutoGen;
 using SharpMusic.DllHellP.Abstract;
 using SharpMusic.DllHellP.Extensions;
 using static FFmpeg.AutoGen.ffmpeg;
@@ -8,6 +7,11 @@ namespace SharpMusic.DllHellP.Utils;
 
 public class FFmpegSourceMetaInfo : IAudioMetaInfo
 {
+    private FFmpegSourceMetaInfo()
+    {
+        Uri = new Uri("");
+    }
+
     public unsafe FFmpegSourceMetaInfo(Uri uri)
     {
         Uri = uri;
@@ -48,4 +52,6 @@ public class FFmpegSourceMetaInfo : IAudioMetaInfo
     public int Channels { get; }
     public int SampleRate { get; }
     public SampleFormat Format { get; }
+
+    public static readonly FFmpegSourceMetaInfo Empty = new();
 }
