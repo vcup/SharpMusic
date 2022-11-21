@@ -136,7 +136,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
             _audioBuffer = Array.Empty<byte>();
         }
 
-        public unsafe void AudioCallback(IntPtr userdata, IntPtr stream, int len)
+        public void AudioCallback(IntPtr userdata, IntPtr stream, int len)
         {
             while (len > 0)
             {
@@ -164,10 +164,13 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
                 }
                 else
                 {
-                    fixed (byte* data = _audioBuffer)
+                    unsafe
                     {
-                        ExternMethod.RtlZeroMemory(stream, processLen);
-                        SDL_MixAudioFormat(stream, (IntPtr)(data + _index), AUDIO_S16, (uint)processLen, _owner.Volume);
+                        fixed (byte* data = _audioBuffer)
+                        {
+                            ExternMethod.RtlZeroMemory(stream, processLen);
+                            SDL_MixAudioFormat(stream, (IntPtr)(data + _index), AUDIO_S16, (uint)processLen, _owner.Volume);
+                        }
                     }
                 }
 
