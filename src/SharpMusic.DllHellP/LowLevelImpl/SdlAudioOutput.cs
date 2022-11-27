@@ -125,6 +125,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
         private ValueTask<bool> _moveFrameTask;
         private byte[] _audioBuffer;
         private int _index;
+        private bool _alreadyBuffering;
 
         /// <param name="owner">Provider want know owner state for adjust volume and call <see cref="SdlAudioOutput.Stop"/> when end of stream</param>
         /// <param name="frames">normally assign <see cref="FFmpegDecoder"/></param>
@@ -140,14 +141,20 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
             _moveFrameTask = _frames.MoveNextAsync();
         }
 
-        public void AudioCallback(IntPtr userdata, IntPtr stream, int len)
+        public void AudioCallback(IntPtr userdata, IntPtr stream, int remainingLen)
         {
-            while (len > 0)
+            var len = remainingLen;
+            while (remainingLen > 0)
             {
                 if (!_moveFrameTask.IsCompleted)
                 {
-                    ExternMethod.RtlZeroMemory(stream, len);
+                    if (_alreadyBuffering) return;
+                    // fill remaining byte with zero
+                    ExternMethod.RtlZeroMemory(stream, remainingLen);
                     _owner.State = PlaybackState.Buffering;
+                    // if remaining len equal len, it meaning stream already all is zero
+                    // for skip fill memory multiple and avoid murmur
+                    _alreadyBuffering = remainingLen == len;
                     return;
                 }
 
@@ -161,9 +168,9 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
                 }
 
                 var processLen = _audioBuffer.Length - _index;
-                if (processLen > len)
+                if (processLen > remainingLen)
                 {
-                    processLen = len;
+                    processLen = remainingLen;
                 }
 
                 if (_owner.IsMute)
@@ -187,14 +194,14 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
                 }
 
 
-                len -= processLen;
+                remainingLen -= processLen;
                 stream += processLen;
                 _index += processLen;
             }
 
             _owner.State = PlaybackState.Playing;
-            if (len <= 0) return;
-            ExternMethod.RtlZeroMemory(stream, len);
+            if (remainingLen <= 0) return;
+            ExternMethod.RtlZeroMemory(stream, remainingLen);
             _owner.Pause();
         }
     }
