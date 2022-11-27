@@ -8,7 +8,7 @@ namespace SharpMusic.DllHellP.LowLevelImpl;
 /// <summary>
 /// decode <see cref="AVPacket"/> from <see cref="FFmpegSource"/>, provide pointer of <see cref="AVFrame"/>
 /// </summary>
-public class FFmpegDecoder : IEnumerable<IntPtr>, IDisposable
+public class FFmpegDecoder : IAsyncEnumerable<IntPtr>, IDisposable
 {
     private readonly FFmpegSource _source;
     private readonly unsafe AVCodecContext* _codecCtx;
@@ -27,69 +27,68 @@ public class FFmpegDecoder : IEnumerable<IntPtr>, IDisposable
     }
 
     /// <summary>
-    /// get enumerator to iteration <see cref="IntPtr"/> of <see cref="AVFrame"/>
+    /// get async enumerator to iteration <see cref="IntPtr"/> of <see cref="AVFrame"/>
     /// </summary>
     /// <returns><see cref="IntPtr"/> point to <see cref="AVPacket"/></returns>
-    public unsafe IEnumerator<IntPtr> GetEnumerator()
+    public unsafe IAsyncEnumerator<IntPtr> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
-        return new Enumerator(_codecCtx, _source.GetEnumerator());
+        return new AsyncEnumerator(_codecCtx, _source.GetAsyncEnumerator(cancellationToken), cancellationToken);
     }
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
-
-    private class Enumerator : IEnumerator<IntPtr>
+    private class AsyncEnumerator : IAsyncEnumerator<IntPtr>
     {
         private readonly unsafe AVCodecContext* _codecCtx;
-        private readonly IEnumerator<IntPtr> _packets;
+        private readonly IAsyncEnumerator<IntPtr> _packets;
+        private readonly CancellationToken _token;
         private readonly unsafe AVFrame* _frame;
         private bool _isDisposed;
 
-        public unsafe Enumerator(AVCodecContext* codecCtx, IEnumerator<IntPtr> packets)
+        public unsafe AsyncEnumerator(AVCodecContext* codecCtx, IAsyncEnumerator<IntPtr> packets,
+            CancellationToken token)
         {
             _codecCtx = codecCtx;
             _packets = packets;
+            _token = token;
             _frame = av_frame_alloc();
-        }
-
-        public unsafe bool MoveNext()
-        {
-            if (_isDisposed || !_packets.MoveNext()) return false;
-            var pkt = _packets.Current;
-            var ret = avcodec_send_packet(_codecCtx, (AVPacket*)pkt);
-            if (ret < 0) return false;
-            ret = avcodec_receive_frame(_codecCtx, _frame);
-            return ret >= 0;
-        }
-
-        public void Reset()
-        {
-            _packets.Reset();
         }
 
         public unsafe IntPtr Current => (IntPtr)_frame;
 
-        object IEnumerator.Current => Current;
-
-        public void Dispose()
+        public async ValueTask<bool> MoveNextAsync()
         {
-            Dispose(true);
+            if (_isDisposed || _token.IsCancellationRequested || !await _packets.MoveNextAsync()) return false;
+            var pkt = _packets.Current;
+            unsafe
+            {
+                var ret = avcodec_send_packet(_codecCtx, (AVPacket*)pkt);
+                if (ret < 0) return false;
+                ret = avcodec_receive_frame(_codecCtx, _frame);
+                return ret >= 0;
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await DisposeAsync(!_isDisposed);
             GC.SuppressFinalize(this);
         }
 
-        private unsafe void Dispose(bool disposing)
+        private async ValueTask DisposeAsync(bool disposing)
         {
             if (!disposing || _isDisposed) return;
-            av_frame_unref(_frame);
-            _packets.Dispose();
+            ReleaseUnmanagedResource();
+            await _packets.DisposeAsync();
             _isDisposed = true;
         }
 
-        ~Enumerator()
+        private unsafe void ReleaseUnmanagedResource()
         {
-            Dispose();
+            av_frame_unref(_frame);
+        }
+
+        ~AsyncEnumerator()
+        {
+            ReleaseUnmanagedResource();
         }
     }
 

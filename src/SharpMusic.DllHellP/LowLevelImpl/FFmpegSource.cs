@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Threading.Tasks.Sources;
 using FFmpeg.AutoGen;
 using SharpMusic.DllHellP.Abstract;
 using SharpMusic.DllHellP.Exceptions;
@@ -11,7 +12,7 @@ namespace SharpMusic.DllHellP.LowLevelImpl;
 /// <summary>
 /// provide pointer of <see cref="AVPacket"/> and some meta information of the stream
 /// </summary>
-public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerable<IntPtr>
+public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnumerable<IntPtr>
 {
     private readonly unsafe AVFormatContext* _formatCtx;
     private readonly unsafe AVStream* _stream;
@@ -73,66 +74,59 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
         {
             avformat_close_input(formatCtx);
         }
+
         _isDisposed = true;
     }
 
     /// <summary>
-    /// get enumerator to iteration <see cref="IntPtr"/> of <see cref="AVPacket"/>
+    /// get async enumerator to iteration <see cref="IntPtr"/> of <see cref="AVPacket"/>
     /// </summary>
     /// <returns><see cref="IntPtr"/> point to <see cref="AVPacket"/></returns>
-    public unsafe IEnumerator<IntPtr> GetEnumerator()
+    public unsafe IAsyncEnumerator<IntPtr> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
-        return new PacketEnumerator(this, _formatCtx, _streamIndex);
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
+        return new PacketAsyncEnumerator(this, _formatCtx, _streamIndex, cancellationToken);
     }
 
     public delegate void FFmpegSourceEofHandler(FFmpegSource sender);
 
     public event FFmpegSourceEofHandler SourceEofEvent;
 
-    private class PacketEnumerator : IEnumerator<IntPtr>
+    private class PacketAsyncEnumerator : IAsyncEnumerator<IntPtr>
     {
         private readonly FFmpegSource _owner;
         private readonly unsafe AVFormatContext* _ctx;
         private readonly int _index;
+        private readonly CancellationToken _token;
         private readonly unsafe AVPacket* _pkt;
         private bool _isDisposed;
 
-        public unsafe PacketEnumerator(FFmpegSource owner, AVFormatContext* ctx, int index)
+        public unsafe PacketAsyncEnumerator(FFmpegSource owner, AVFormatContext* ctx, int index,
+            CancellationToken token)
         {
             _owner = owner;
             _ctx = ctx;
             _index = index;
+            _token = token;
             _pkt = av_packet_alloc();
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+        public unsafe IntPtr Current => (IntPtr)_pkt;
 
-        private unsafe void Dispose(bool disposing)
+        public async ValueTask<bool> MoveNextAsync()
         {
-            if (!disposing && _isDisposed) return;
-            av_packet_unref(_pkt);
-            _isDisposed = true;
-        }
-
-        public unsafe bool MoveNext()
-        {
-            if (_isDisposed) return false;
-            av_packet_unref(_pkt);
-            var ret = av_read_frame(_ctx, _pkt);
-            while (ret >= 0 && _pkt->stream_index != _index)
+            if (_isDisposed || _token.IsCancellationRequested) return false;
+            var ret = 0;
+            await Task.Run(() =>
             {
-                av_packet_unref(_pkt);
-                ret = av_read_frame(_ctx, _pkt);
-            }
+                unsafe
+                {
+                    do
+                    {
+                        av_packet_unref(_pkt);
+                        ret = av_read_frame(_ctx, _pkt);
+                    } while (ret >= 0 && _pkt->stream_index != _index);
+                }
+            }, _token);
 
             if (ret >= 0) return true;
 
@@ -146,16 +140,31 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IEnumerab
 
         private async void InvokeEventAsync()
         {
-            await Task.Run(() => _owner.SourceEofEvent(_owner));
+            await Task.Run(() => _owner.SourceEofEvent(_owner), _token);
         }
 
-        public unsafe IntPtr Current => (IntPtr)_pkt;
-
-        object IEnumerator.Current => Current;
-
-        public void Reset()
+        public async ValueTask DisposeAsync()
         {
-            throw new NotSupportedException();
+            await DisposeAsync(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private ValueTask DisposeAsync(bool disposing)
+        {
+            if (!disposing && _isDisposed) return ValueTask.CompletedTask;
+            ReleaseUnmanagedResource();
+            _isDisposed = true;
+            return ValueTask.CompletedTask;
+        }
+
+        private unsafe void ReleaseUnmanagedResource()
+        {
+            av_packet_unref(_pkt);
+        }
+
+        ~PacketAsyncEnumerator()
+        {
+            ReleaseUnmanagedResource();
         }
     }
 
