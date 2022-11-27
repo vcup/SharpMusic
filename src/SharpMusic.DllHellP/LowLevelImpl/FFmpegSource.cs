@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Threading.Tasks.Sources;
-using FFmpeg.AutoGen;
+﻿using FFmpeg.AutoGen;
 using SharpMusic.DllHellP.Abstract;
 using SharpMusic.DllHellP.Exceptions;
 using SharpMusic.DllHellP.Extensions;
@@ -89,7 +87,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
 
     public delegate void FFmpegSourceEofHandler(FFmpegSource sender);
 
-    public event FFmpegSourceEofHandler SourceEofEvent;
+    public event FFmpegSourceEofHandler? SourceEofEvent;
 
     private class PacketAsyncEnumerator : IAsyncEnumerator<IntPtr>
     {
