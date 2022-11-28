@@ -100,7 +100,6 @@ public class PlaybackManager
                 _output.Resume();
                 break;
             case PlaybackState.Playing:
-                break;
             case PlaybackState.Buffering:
                 break;
             default:
