@@ -12,6 +12,7 @@ namespace SharpMusic.DllHellP.LowLevelImpl;
 /// </summary>
 public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnumerable<IntPtr>
 {
+    private readonly object _lock = new();
     private readonly unsafe AVFormatContext* _formatCtx;
     private readonly unsafe AVStream* _stream;
     private readonly int _streamIndex;
@@ -49,6 +50,25 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
     public Uri Uri { get; }
     public unsafe TimeSpan Duration => TimeSpan.FromTicks(_formatCtx->duration * 10); // 1tick = 10us
     public TimeSpan Position { get; set; }
+    public unsafe void ResetStream()
+    {
+        lock (_lock)
+        {
+            av_seek_frame(_formatCtx, _streamIndex, 0, AVSEEK_FLAG_BYTE);
+        }
+    }
+
+    public unsafe void SeekStream(TimeSpan time)
+    {
+        // timestamp unit is us, 1Tick = 10us
+        var timestamp = av_rescale_q(time.Ticks / 10, FFmpegHelper.AV_TIME_BASE_Q, _stream->time_base);
+
+        lock (_lock)
+        {
+            av_seek_frame(_formatCtx, _streamIndex, timestamp, AVSEEK_FLAG_FRAME);
+        }
+    }
+
     public unsafe long BitRate => _formatCtx->bit_rate;
     public unsafe int BitDepth => _stream->codecpar->bits_per_coded_sample;
     public unsafe int Channels => _stream->codecpar->ch_layout.nb_channels;
@@ -120,8 +140,11 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
                 {
                     do
                     {
-                        av_packet_unref(_pkt);
-                        ret = av_read_frame(_ctx, _pkt);
+                        lock (_owner._lock)
+                        {
+                            av_packet_unref(_pkt);
+                            ret = av_read_frame(_ctx, _pkt);
+                        }
                     } while (ret >= 0 && _pkt->stream_index != _index);
                 }
             }, _token);

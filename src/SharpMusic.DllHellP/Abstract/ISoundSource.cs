@@ -6,4 +6,8 @@ public interface ISoundSource
 
     public TimeSpan Duration { get; }
     public TimeSpan Position { get; set; }
+
+    public void ResetStream();
+
+    public void SeekStream(TimeSpan time);
 }
