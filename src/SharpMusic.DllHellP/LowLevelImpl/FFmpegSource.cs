@@ -161,7 +161,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
 
         private async void InvokeEventAsync()
         {
-            await Task.Run(() => _owner.SourceEofEvent(_owner), _token);
+            await Task.Run(() => _owner.SourceEofEvent?.Invoke(_owner), _token);
         }
 
         public async ValueTask DisposeAsync()
