@@ -148,9 +148,9 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
             {
                 if (!_moveFrameTask.IsCompleted)
                 {
-                    if (_alreadyBuffering) return;
                     // fill remaining byte with zero
                     ExternMethod.RtlZeroMemory(stream, remainingLen);
+                    if (_alreadyBuffering) return;
                     _owner.State = PlaybackState.Buffering;
                     // if remaining len equal len, it meaning stream already all is zero
                     // for skip fill memory multiple and avoid murmur
@@ -200,6 +200,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
             }
 
             _owner.State = PlaybackState.Playing;
+            _alreadyBuffering = false;
             if (remainingLen <= 0) return;
             ExternMethod.RtlZeroMemory(stream, remainingLen);
             _owner.Pause();
