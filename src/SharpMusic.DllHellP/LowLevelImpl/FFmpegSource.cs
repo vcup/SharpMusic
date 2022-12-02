@@ -16,6 +16,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
     private readonly unsafe AVFormatContext* _formatCtx;
     private readonly unsafe AVStream* _stream;
     private readonly int _streamIndex;
+    private readonly IAsyncEnumerator<IntPtr> _pktEnumerator;
     private bool _isDisposed;
 
     public unsafe FFmpegSource(Uri uri)
@@ -43,6 +44,8 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
             _stream = _formatCtx->streams[_streamIndex = i];
             break;
         }
+
+        _pktEnumerator = new PacketAsyncEnumerator(this, _formatCtx, _streamIndex);
 
         Format = (*_stream->codecpar).ToSampleFormat();
     }
@@ -87,6 +90,10 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
     private unsafe void Dispose(bool disposing)
     {
         if (!disposing) return;
+        var task = _pktEnumerator.DisposeAsync();
+        while (!task.IsCompleted)
+        {
+        }
 
         fixed (AVFormatContext** formatCtx = &_formatCtx)
         {
@@ -99,10 +106,11 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
     /// <summary>
     /// get async enumerator to iteration <see cref="IntPtr"/> of <see cref="AVPacket"/>
     /// </summary>
+    /// <param name="cancellationToken">inherit from interface, but is will ignore</param>
     /// <returns><see cref="IntPtr"/> point to <see cref="AVPacket"/></returns>
-    public unsafe IAsyncEnumerator<IntPtr> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+    public IAsyncEnumerator<IntPtr> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
-        return new PacketAsyncEnumerator(this, _formatCtx, _streamIndex, cancellationToken);
+        return _pktEnumerator;
     }
 
     public delegate void FFmpegSourceEofHandler(FFmpegSource sender);
@@ -114,17 +122,14 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
         private readonly FFmpegSource _owner;
         private readonly unsafe AVFormatContext* _ctx;
         private readonly int _index;
-        private readonly CancellationToken _token;
         private readonly unsafe AVPacket* _pkt;
         private bool _isDisposed;
 
-        public unsafe PacketAsyncEnumerator(FFmpegSource owner, AVFormatContext* ctx, int index,
-            CancellationToken token)
+        public unsafe PacketAsyncEnumerator(FFmpegSource owner, AVFormatContext* ctx, int index)
         {
             _owner = owner;
             _ctx = ctx;
             _index = index;
-            _token = token;
             _pkt = av_packet_alloc();
         }
 
@@ -132,7 +137,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
 
         public async ValueTask<bool> MoveNextAsync()
         {
-            if (_isDisposed || _token.IsCancellationRequested) return false;
+            if (_isDisposed) return false;
             var ret = 0;
             await Task.Run(() =>
             {
@@ -147,7 +152,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
                         }
                     } while (ret >= 0 && _pkt->stream_index != _index);
                 }
-            }, _token);
+            });
 
             if (ret >= 0) return true;
 
@@ -161,7 +166,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
 
         private async void InvokeEventAsync()
         {
-            await Task.Run(() => _owner.SourceEofEvent?.Invoke(_owner), _token);
+            await Task.Run(() => _owner.SourceEofEvent?.Invoke(_owner));
         }
 
         public async ValueTask DisposeAsync()
