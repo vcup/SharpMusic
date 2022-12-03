@@ -51,7 +51,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
     }
 
     public Uri Uri { get; }
-    public unsafe TimeSpan Duration => TimeSpan.FromTicks(_formatCtx->duration * 10); // 1tick = 10us
+    public unsafe TimeSpan Duration => TimeSpan.FromTicks(_formatCtx->duration * 10); // 1us = 10tick
     public TimeSpan Position { get; set; }
     public unsafe void ResetStream()
     {
@@ -63,7 +63,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
 
     public unsafe void SeekStream(TimeSpan time)
     {
-        // timestamp unit is us, 1Tick = 10us
+        // timestamp unit is us, 1us = 10Tick
         var timestamp = av_rescale_q(time.Ticks / 10, FFmpegHelper.AV_TIME_BASE_Q, _stream->time_base);
 
         lock (_lock)
