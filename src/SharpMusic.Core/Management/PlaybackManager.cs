@@ -26,7 +26,10 @@ public class PlaybackManager
     public long PlayPositionTicks
     {
         get => _source is not null ? _source.Position.Ticks : 0;
-        set => throw new NotImplementedException();
+        set
+        {
+            if (_source is not null) _source.Position = TimeSpan.FromTicks(value);
+        }
     }
 
     public long PlaybackTimeTicks => _source is not null ? _source.Duration.Ticks : 0;
