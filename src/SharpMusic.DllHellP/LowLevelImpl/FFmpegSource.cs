@@ -19,6 +19,9 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
     private readonly IAsyncEnumerator<IntPtr> _pktEnumerator;
     private bool _isDisposed;
 
+    private static readonly AVRational Second2Ticks =
+        new() { num = 1, den = 10_000_000 }; // is mean 1/10_000_000, 1s = 10_000_000 ticks
+
     public unsafe FFmpegSource(Uri uri)
     {
         Uri = uri;
@@ -52,7 +55,30 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
 
     public Uri Uri { get; }
     public unsafe TimeSpan Duration => TimeSpan.FromTicks(_formatCtx->duration * 10); // 1us = 10tick
-    public TimeSpan Position { get; set; }
+
+    public unsafe TimeSpan Position
+    {
+        get
+        {
+            long dts;
+            lock (_lock)
+            {
+                var pkt = (AVPacket*)_pktEnumerator.Current;
+                if (pkt->duration is 0) return TimeSpan.Zero;
+                dts = pkt->dts;
+            }
+
+            var timeBase = _stream->time_base;
+            // av_rescale_q -> a*b/c
+            return TimeSpan.FromTicks(av_rescale_q(dts, timeBase, Second2Ticks));
+        }
+        set
+        {
+            if (value.Ticks is 0) ResetStream();
+            else SeekStream(value);
+        }
+    }
+
     public unsafe void ResetStream()
     {
         lock (_lock)
@@ -145,9 +171,9 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
                 {
                     do
                     {
-                        av_packet_unref(_pkt);
                         lock (_owner._lock)
                         {
+                            av_packet_unref(_pkt);
                             ret = av_read_frame(_ctx, _pkt);
                         }
                     } while (ret >= 0 && _pkt->stream_index != _index);
