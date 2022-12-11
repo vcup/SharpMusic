@@ -9,11 +9,11 @@ namespace SharpMusic.Core.Utils;
 /// </summary>
 /// <typeparam name="T">storage type of collection</typeparam>
 /// <typeparam name="TOwnerType">the instance own by what type</typeparam>
-internal sealed class CustomObservableImpl<T, TOwnerType> : ObservableCollection<T>
+internal sealed class RelatedDescriptors<T, TOwnerType> : ObservableCollection<T>
     where T : IDescriptor
     where TOwnerType : IDescriptor
 {
-    private readonly Func<T, CustomObservableImpl<TOwnerType, T>> _linkedImplGetter;
+    private readonly Func<T, RelatedDescriptors<TOwnerType, T>> _linkedImplGetter;
     private readonly TOwnerType _instance;
 
     /// <summary>
@@ -21,7 +21,7 @@ internal sealed class CustomObservableImpl<T, TOwnerType> : ObservableCollection
     /// </summary>
     /// <param name="linkedImplGetter">getter for linked collection</param>
     /// <param name="instance">when this collection has change, where instance will reaction in linked collection</param>
-    public CustomObservableImpl(Func<T, CustomObservableImpl<TOwnerType, T>> linkedImplGetter, TOwnerType instance)
+    public RelatedDescriptors(Func<T, RelatedDescriptors<TOwnerType, T>> linkedImplGetter, TOwnerType instance)
     {
         _linkedImplGetter = linkedImplGetter;
         _instance = instance;

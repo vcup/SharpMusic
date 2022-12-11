@@ -10,8 +10,8 @@ public class Music : IDescriptor
     {
         Guid = guid;
         Names = new List<string>();
-        AlbumsIncluded = new CustomObservableImpl<Album, Music>(
-            i => (i.Tracks as CustomObservableImpl<Music, Album>)!, this);
+        AlbumsIncluded = new RelatedDescriptors<Album, Music>(
+            i => (i.Tracks as RelatedDescriptors<Music, Album>)!, this);
         SoundSource = new List<Uri>();
     }
 

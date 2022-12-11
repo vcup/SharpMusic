@@ -9,10 +9,10 @@ public class Artist : IDescriptor
         Guid = guid;
         Names = new List<string>();
         Description = string.Empty;
-        Albums = new CustomObservableImpl<Album, Artist>(
-            i => (i.Artists as CustomObservableImpl<Artist, Album>)!, this);
-        JoinedGroups = new CustomObservableImpl<ArtistsGroup, Artist>(
-            i => (i.Members as CustomObservableImpl<Artist, ArtistsGroup>)!, this);
+        Albums = new RelatedDescriptors<Album, Artist>(
+            i => (i.Artists as RelatedDescriptors<Artist, Album>)!, this);
+        JoinedGroups = new RelatedDescriptors<ArtistsGroup, Artist>(
+            i => (i.Members as RelatedDescriptors<Artist, ArtistsGroup>)!, this);
     }
 
     public Artist() : this(Guid.NewGuid())

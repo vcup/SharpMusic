@@ -12,10 +12,10 @@ public class Album : IDescriptor
         Guid = guid;
         Names = new List<string>();
         Description = string.Empty;
-        Artists = new CustomObservableImpl<Artist, Album>(
-            i => (i.Albums as CustomObservableImpl<Album, Artist>)!, this);
-        Tracks = new CustomObservableImpl<Music, Album>(
-            i => (i.AlbumsIncluded as CustomObservableImpl<Album, Music>)!, this);
+        Artists = new RelatedDescriptors<Artist, Album>(
+            i => (i.Albums as RelatedDescriptors<Album, Artist>)!, this);
+        Tracks = new RelatedDescriptors<Music, Album>(
+            i => (i.AlbumsIncluded as RelatedDescriptors<Album, Music>)!, this);
         StaffList = new StaffList(this);
     }
 
