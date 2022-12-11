@@ -36,6 +36,15 @@ public class PlaybackManager
 
     public PlaybackState PlaybackState => _output.State;
 
+    /// <summary>
+    /// control output volume, value range: 0~100
+    /// </summary>
+    public int Volume
+    {
+        get => (int)(_output.Volume / (_output.MaxVolume / 100.0));
+        set => _output.Volume = (int)(value * (_output.MaxVolume / 100.0));
+    }
+
     public PlaybackMode PlaybackMode
     {
         get => _playbackMode;
