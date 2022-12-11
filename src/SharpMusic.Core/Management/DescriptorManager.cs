@@ -20,7 +20,7 @@ public class DescriptorManager
     }
 
     private IEnumerable<IDescriptor> GetAllDescriptor() =>
-        _musics.Select(i => (IDescriptor)i)
+        (_musics as IEnumerable<IDescriptor>)
             .Concat(_albums)
             .Concat(_artists)
             .Concat(_artistsGroups)

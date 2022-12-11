@@ -4,6 +4,11 @@ using SharpMusic.Core.Descriptor;
 
 namespace SharpMusic.Core.Utils;
 
+/// <summary>
+/// link collection with getter delegate, when the collection items has change, reaction in linked instance
+/// </summary>
+/// <typeparam name="T">storage type of collection</typeparam>
+/// <typeparam name="TOwnerType">the instance own by what type</typeparam>
 internal sealed class CustomObservableImpl<T, TOwnerType> : ObservableCollection<T>
     where T : IDescriptor
     where TOwnerType : IDescriptor
@@ -11,6 +16,11 @@ internal sealed class CustomObservableImpl<T, TOwnerType> : ObservableCollection
     private readonly Func<T, CustomObservableImpl<TOwnerType, T>> _linkedImplGetter;
     private readonly TOwnerType _instance;
 
+    /// <summary>
+    /// linker func for get linked collection and storage instance of owner type
+    /// </summary>
+    /// <param name="linkedImplGetter">getter for linked collection</param>
+    /// <param name="instance">when this collection has change, where instance will reaction in linked collection</param>
     public CustomObservableImpl(Func<T, CustomObservableImpl<TOwnerType, T>> linkedImplGetter, TOwnerType instance)
     {
         _linkedImplGetter = linkedImplGetter;
@@ -24,6 +34,7 @@ internal sealed class CustomObservableImpl<T, TOwnerType> : ObservableCollection
             && args.NewItems![0] is T newItem
             && _linkedImplGetter(newItem).All(i => i.Guid != _instance.Guid))
         {
+            // direct use private Items for avoid notify twice
             _linkedImplGetter(newItem).Items.Add(_instance);
         }
         else if (args.Action.HasFlag(NotifyCollectionChangedAction.Remove)
@@ -35,6 +46,7 @@ internal sealed class CustomObservableImpl<T, TOwnerType> : ObservableCollection
 
     protected override void ClearItems()
     {
+        // clear collection does not broadcast change, delete for each items
         foreach (var item in this)
         {
             _linkedImplGetter(item).Items.Remove(_instance);
