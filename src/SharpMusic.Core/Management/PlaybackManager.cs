@@ -75,9 +75,7 @@ public class PlaybackManager
 
                 void LoopSingleOnSourceEof(FFmpegSource sender)
                 {
-                    // TODO: change low level impl for direct back to begin
-                    ReOpenCurrentMusic();
-                    PlayOrResume();
+                    sender.ResetStream();
                 }
             }
 
