@@ -2,6 +2,9 @@
 
 namespace SharpMusic.Core.ExpandInfo;
 
+/// <summary>
+/// Staff list of Album
+/// </summary>
 public class StaffList : List<TrackParticipants>
 {
     public StaffList(Album album)

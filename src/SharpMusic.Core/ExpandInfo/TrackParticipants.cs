@@ -2,6 +2,9 @@
 
 namespace SharpMusic.Core.ExpandInfo;
 
+/// <summary>
+/// Staff and ContributionType of music on an album
+/// </summary>
 public class TrackParticipants : Dictionary<Artist, StaffContributionType>
 {
     public TrackParticipants(Music sourceMusic, Album sourceAlbum)

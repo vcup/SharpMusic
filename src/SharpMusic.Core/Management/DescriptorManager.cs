@@ -2,6 +2,9 @@
 
 namespace SharpMusic.Core.Management;
 
+/// <summary>
+/// storage related Descriptors
+/// </summary>
 public class DescriptorManager
 {
     private readonly List<Music> _musics;
@@ -26,6 +29,11 @@ public class DescriptorManager
             .Concat(_artistsGroups)
             .Concat(_playlists);
 
+    /// <summary>
+    /// storage descriptor, only storage once same descriptor
+    /// </summary>
+    /// <param name="item">will storage descriptor</param>
+    /// <exception cref="ArgumentException"></exception>
     public void Add(IDescriptor item)
     {
         switch (item)
@@ -50,6 +58,11 @@ public class DescriptorManager
         }
     }
 
+    /// <summary>
+    /// storage via many descriptor, ignore exited descriptor
+    /// </summary>
+    /// <param name="items">enumerable of storage</param>
+    /// <exception cref="ArgumentOutOfRangeException">enumerable contained does not support type of descriptor</exception>
     public void Add(IEnumerable<IDescriptor> items)
     {
         foreach (var item in items.ExceptBy(GetAllDescriptor().Select(i => i.Guid), i => i.Guid))
