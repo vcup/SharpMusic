@@ -38,23 +38,23 @@ public class DescriptorManager
     {
         switch (item)
         {
-            case Music music:
-                Add(music);
+            case Music music when _musics.All(i => i.Guid != item.Guid):
+                _musics.Add(music);
                 break;
-            case Album album:
-                Add(album);
+            case Album album when _albums.All(i => i.Guid != item.Guid):
+                _albums.Add(album);
                 break;
-            case ArtistsGroup artistGroup:
-                Add(artistGroup);
+            case ArtistsGroup artistGroup when _artistsGroups.All(i => i.Guid != item.Guid):
+                _artistsGroups.Add(artistGroup);
                 break;
-            case Artist artist:
-                Add(artist);
+            case Artist artist when _artists.All(i => i.Guid != item.Guid):
+                _artists.Add(artist);
                 break;
-            case Playlist playlist:
-                Add(playlist);
+            case Playlist playlist when _playlists.All(i => i.Guid != item.Guid):
+                _playlists.Add(playlist);
                 break;
             default:
-                throw new ArgumentException();
+                throw new ArgumentOutOfRangeException(nameof(item));
         }
     }
 
@@ -85,48 +85,8 @@ public class DescriptorManager
                     _playlists.Add(playlist);
                     break;
                 default:
-                    throw new ArgumentException();
+                    throw new ArgumentOutOfRangeException(nameof(items), item, $"Descriptor Guid is: {item.Guid}");
             }
-        }
-    }
-
-    private void Add(Music music)
-    {
-        if (_musics.All(i => i.Guid != music.Guid))
-        {
-            _musics.Add(music);
-        }
-    }
-
-    private void Add(Album album)
-    {
-        if (_albums.All(i => i.Guid != album.Guid))
-        {
-            _albums.Add(album);
-        }
-    }
-
-    private void Add(Artist artist)
-    {
-        if (_artists.All(i => i.Guid != artist.Guid))
-        {
-            _artists.Add(artist);
-        }
-    }
-
-    private void Add(ArtistsGroup artistsGroup)
-    {
-        if (_artistsGroups.All(i => i.Guid != artistsGroup.Guid))
-        {
-            _artistsGroups.Add(artistsGroup);
-        }
-    }
-
-    private void Add(Playlist playlist)
-    {
-        if (_playlists.All(i => i.Guid != playlist.Guid))
-        {
-            _playlists.Add(playlist);
         }
     }
 }
