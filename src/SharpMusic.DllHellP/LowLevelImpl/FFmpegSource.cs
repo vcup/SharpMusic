@@ -20,7 +20,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
     private bool _isDisposed;
 
     private static readonly AVRational Second2Ticks =
-        new() { num = 1, den = 10_000_000 }; // is mean 1/10_000_000, 1s = 10_000_000 ticks
+        new() { num = 1, den = (int)TimeSpan.TicksPerSecond }; // is mean 1/10000000
 
     public unsafe FFmpegSource(Uri uri)
     {
@@ -60,13 +60,9 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
     {
         get
         {
-            long dts;
-            lock (_lock)
-            {
-                var pkt = (AVPacket*)_pktEnumerator.Current;
-                if (pkt->duration is 0) return TimeSpan.Zero;
-                dts = pkt->dts;
-            }
+            var pkt = (AVPacket*)_pktEnumerator.Current;
+            if (pkt->duration <= 0) return TimeSpan.Zero;
+            var dts = pkt->dts;
 
             var timeBase = _stream->time_base;
             // av_rescale_q -> a*b/c
@@ -81,10 +77,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
 
     public unsafe void ResetStream()
     {
-        lock (_lock)
-        {
-            av_seek_frame(_formatCtx, _streamIndex, 0, AVSEEK_FLAG_BYTE);
-        }
+        av_seek_frame(_formatCtx, _streamIndex, 0, AVSEEK_FLAG_BYTE);
     }
 
     public unsafe void SeekStream(TimeSpan time)
@@ -133,7 +126,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
     /// get async enumerator to iteration <see cref="IntPtr"/> of <see cref="AVPacket"/>
     /// </summary>
     /// <param name="cancellationToken">inherit from interface, but is will ignore</param>
-    /// <returns><see cref="IntPtr"/> point to <see cref="AVPacket"/></returns>
+    /// <returns><see cref="IntPtr"/>point to <see cref="AVPacket"/></returns>
     public IAsyncEnumerator<IntPtr> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
         return _pktEnumerator;
@@ -171,11 +164,8 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
                 {
                     do
                     {
-                        lock (_owner._lock)
-                        {
-                            av_packet_unref(_pkt);
-                            ret = av_read_frame(_ctx, _pkt);
-                        }
+                        av_packet_unref(_pkt);
+                        ret = av_read_frame(_ctx, _pkt);
                     } while (ret >= 0 && _pkt->stream_index != _index);
                 }
             });
