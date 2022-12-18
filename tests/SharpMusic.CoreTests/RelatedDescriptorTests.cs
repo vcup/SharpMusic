@@ -6,7 +6,7 @@ namespace SharpMusic.CoreTests;
 public class RelatedDescriptorTests
 {
     [Test]
-    public void Add_AddA2B_BContainsA()
+    public void Add_AddA2B_AContainBAndBContainsA()
     {
         // arrange
         var a = new Descriptor();
@@ -21,7 +21,7 @@ public class RelatedDescriptorTests
     }
 
     [Test]
-    public void Remove_RemoveAInB_ADoesNotContainB()
+    public void Remove_RemoveAInB_ADoesNotContainBAndSimilarInB()
     {
         // arrange
         var a = new Descriptor();
@@ -38,7 +38,7 @@ public class RelatedDescriptorTests
     }
 
     [Test]
-    public void ClearItems_ClearInA_BDoesNotContainA()
+    public void ClearItems_ClearInA_BDoesNotContainAAndSimilarInB()
     {
         // arrange
         var a = new Descriptor();
@@ -55,7 +55,7 @@ public class RelatedDescriptorTests
     }
 
     [Test]
-    public void Replace_ReplaceAInBWithC_BContainCAndNotContainA()
+    public void Replace_ReplaceAInBWithC_BContainCAndNotContainAAndSimilarInAC()
     {
         // arrange
         var a = new Descriptor();
@@ -69,7 +69,7 @@ public class RelatedDescriptorTests
 
         // assert
         Assert.That(a.RelatedDescriptors, Does.Not.Contain(b));
-        Assert.That(b.RelatedDescriptors, Does.Not.Contain(a).And.Contain(c));
+        Assert.That(b.RelatedDescriptors, Does.Contain(c).And.Not.Contain(a));
         Assert.That(c.RelatedDescriptors, Does.Contain(b));
     }
 
