@@ -90,6 +90,38 @@ public class RelatedDescriptorTests
         Assert.That(b.RelatedDescriptors, Does.Contain(a));
     }
 
+    [Test]
+    public void AddWithoutNotify_AddA2BWithoutNotify_BContainAButADoesNotContainB()
+    {
+        // arrange
+        var a = new Descriptor();
+        var b = new Descriptor();
+        
+        // act
+        b.RelatedDescriptors.AddWithoutNotify(a);
+        
+        // assert
+        Assert.That(a.RelatedDescriptors, Does.Not.Contain(b));
+        Assert.That(b.RelatedDescriptors, Does.Contain(a));
+    }
+
+    [Test]
+    public void RemoveWithoutNotify_RemoveAInBWithoutNotify_AContainBButBDoesNotContainA()
+    {
+        // arrange
+        var a = new Descriptor();
+        var b = new Descriptor();
+        a.RelatedDescriptors.AddWithoutNotify(b);
+        b.RelatedDescriptors.AddWithoutNotify(a);
+        
+        // act
+        b.RelatedDescriptors.RemoveWithoutNotify(a);
+        
+        // assert
+        Assert.That(a.RelatedDescriptors, Does.Contain(b));
+        Assert.That(b.RelatedDescriptors, Does.Not.Contain(a));
+    }
+
     class Descriptor : IDescriptor
     {
         public Descriptor()
