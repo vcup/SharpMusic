@@ -32,17 +32,33 @@ internal sealed class RelatedDescriptors<T, TOwnerType> : ObservableCollection<T
 
     private void CollectionChangedAddOrRemoved(object? sender, NotifyCollectionChangedEventArgs args)
     {
-        if (args.Action.HasFlag(NotifyCollectionChangedAction.Add)
-            && args.NewItems![0] is T newItem
-            && _linkedImplGetter(newItem).All(i => i.Guid != _instance.Guid))
+        switch (args.Action)
         {
-            // direct use private Items for avoid notify twice
-            _linkedImplGetter(newItem).Items.Add(_instance);
-        }
-        else if (args.Action.HasFlag(NotifyCollectionChangedAction.Remove)
-                 && args.OldItems![0] is T oldItem)
-        {
-            _linkedImplGetter(oldItem).Items.Remove(_instance);
+            case NotifyCollectionChangedAction.Add
+                when args.NewItems![0] is T newItem
+                     && _linkedImplGetter(newItem).All(i => i.Guid != _instance.Guid):
+                // direct use private Items for avoid notify twice
+                _linkedImplGetter(newItem).Items.Add(_instance);
+                break;
+            case NotifyCollectionChangedAction.Remove
+                when args.OldItems![0] is T oldItem:
+                _linkedImplGetter(oldItem).Items.Remove(_instance);
+                break;
+            case NotifyCollectionChangedAction.Reset:
+                // do nothing before reset because items already cleaned
+                break;
+            case NotifyCollectionChangedAction.Replace
+                when args.NewItems![0] is T newItem
+                     && args.OldItems![0] is T oldItem
+                     && newItem.Guid != oldItem.Guid:
+                _linkedImplGetter(oldItem).Items.Remove(_instance);
+                _linkedImplGetter(newItem).Items.Add(_instance);
+                break;
+            case NotifyCollectionChangedAction.Move:
+                // do nothing when move
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(args.Action));
         }
     }
 
