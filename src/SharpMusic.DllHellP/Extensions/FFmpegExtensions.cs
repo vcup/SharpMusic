@@ -30,4 +30,11 @@ public static class FFmpegExtensions
                 _ => throw new ArgumentOutOfRangeException(nameof(parameters), parameters, null)
             };
     }
+
+    public static unsafe int GetBitDepth(AVCodecParameters* parameters)
+    {
+        return parameters->bits_per_raw_sample is not 0
+            ? parameters->bits_per_raw_sample
+            : parameters->bits_per_coded_sample;
+    }
 }
