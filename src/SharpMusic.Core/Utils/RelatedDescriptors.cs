@@ -1,7 +1,9 @@
 ﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Runtime.CompilerServices;
 using SharpMusic.Core.Descriptor;
 
+[assembly:InternalsVisibleTo("SharpMusic.CoreTests")]
 namespace SharpMusic.Core.Utils;
 
 /// <summary>
