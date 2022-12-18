@@ -1,4 +1,5 @@
-﻿using System.Reactive;
+﻿using System;
+using System.Reactive;
 using ReactiveUI;
 using SharpMusic.Core.Management;
 
@@ -27,8 +28,8 @@ public class MainWindowViewModel : ViewModelBase
 
     public long PlayPosition
     {
-        get => _playbackManager.PlayPositionTicks;
-        set => _playbackManager.PlayPositionTicks = value;
+        get => _playbackManager.PlayPosition.Ticks;
+        set => _playbackManager.PlayPosition = TimeSpan.FromTicks(value);
     }
 
     public long PlaybackTime => _playbackManager.PlaybackTimeTicks;

@@ -23,12 +23,12 @@ public class PlaybackManager
         Playlist = new(Guid.Empty);
     }
 
-    public long PlayPositionTicks
+    public TimeSpan PlayPosition
     {
-        get => _source is not null ? _source.Position.Ticks : 0;
+        get => _source?.Position ?? TimeSpan.Zero;
         set
         {
-            if (_source is not null) _source.Position = TimeSpan.FromTicks(value);
+            if (_source is not null) _source.Position = value;
         }
     }
 
