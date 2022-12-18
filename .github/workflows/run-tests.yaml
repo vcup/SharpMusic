@@ -10,4 +10,13 @@ jobs:
       - uses: actions/setup-dotnet@v2
         with:
           dotnet-version: 7.0.x
+      - run: dotnet restore
+      - run: dotnet build
+      - uses: robinraju/release-downloader@v1.6
+        with:
+          repository: BtbN/FFmpeg-Builds
+          latest: true
+          fileName: ffmpeg-master-latest-linux64-gpl-shared.tar.xz
+      - run: tar -xvf ffmpeg-master-latest-linux64-gpl-shared.tar.xz
+      - run: cp -r ffmpeg-master-latest-linux64-gpl-shared/lib/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
       - run: dotnet test
