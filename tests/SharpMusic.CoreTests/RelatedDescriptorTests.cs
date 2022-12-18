@@ -73,6 +73,23 @@ public class RelatedDescriptorTests
         Assert.That(c.RelatedDescriptors, Does.Contain(b));
     }
 
+    [Test]
+    public void Replace_ReplaceAInBWithItSelf_NothingChange()
+    {
+        // arrange
+        var a = new Descriptor();
+        var b = new Descriptor();
+        a.RelatedDescriptors.AddWithoutNotify(b);
+        b.RelatedDescriptors.AddWithoutNotify(a);
+
+        // act
+        b.RelatedDescriptors[0] = a;
+
+        // assert
+        Assert.That(a.RelatedDescriptors, Does.Contain(b));
+        Assert.That(b.RelatedDescriptors, Does.Contain(a));
+    }
+
     class Descriptor : IDescriptor
     {
         public Descriptor()

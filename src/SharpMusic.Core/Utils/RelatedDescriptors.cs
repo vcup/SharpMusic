@@ -49,8 +49,8 @@ internal sealed class RelatedDescriptors<T, TOwnerType> : ObservableCollection<T
                 break;
             case NotifyCollectionChangedAction.Replace
                 when args.NewItems![0] is T newItem
-                     && args.OldItems![0] is T oldItem
-                     && newItem.Guid != oldItem.Guid:
+                     && args.OldItems![0] is T oldItem:
+                if (newItem.Guid == oldItem.Guid) break;
                 _linkedImplGetter(oldItem).Items.Remove(_instance);
                 _linkedImplGetter(newItem).Items.Add(_instance);
                 break;
@@ -58,7 +58,7 @@ internal sealed class RelatedDescriptors<T, TOwnerType> : ObservableCollection<T
                 // do nothing when move
                 break;
             default:
-                throw new ArgumentOutOfRangeException(nameof(args.Action));
+                throw new ArgumentOutOfRangeException(nameof(args) + '.' + nameof(args.Action));
         }
     }
 
