@@ -38,7 +38,7 @@ public class FFmpegSourceMetaInfo : IAudioMetaInfo
             BitDepth = stream->codecpar->bits_per_coded_sample;
             Channels = stream->codecpar->ch_layout.nb_channels;
             SampleRate = stream->codecpar->sample_rate;
-            Format = (*stream->codecpar).ToSampleFormat();
+            Format = FFmpegExtensions.GetSampleFormat(stream->codecpar);
             break;
         }
 

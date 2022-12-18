@@ -50,7 +50,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
 
         _pktEnumerator = new PacketAsyncEnumerator(this, _formatCtx, _streamIndex);
 
-        Format = (*_stream->codecpar).ToSampleFormat();
+        Format = FFmpegExtensions.GetSampleFormat(_stream->codecpar);
     }
 
     public Uri Uri { get; }
