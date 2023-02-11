@@ -19,13 +19,19 @@ public static class FFmpegExtensions
 
     public static unsafe SampleFormat GetSampleFormat(AVCodecParameters* parameters)
     {
-        if (parameters->codec_type is not AVMediaType.AVMEDIA_TYPE_AUDIO) return SampleFormat.None;
+        if (parameters->codec_type is not AVMediaType.AVMEDIA_TYPE_AUDIO)
+        {
+            var message = $"codec_type must be {AVMediaType.AVMEDIA_TYPE_AUDIO} instead of {parameters->codec_type}";
+            throw new
+                ArgumentException(message, nameof(parameters));
+        }
         return parameters->format switch
         {
             -1 => SampleFormat.None,
             0 => SampleFormat.Unsigned8,
             1 => SampleFormat.Signed16,
             2 => SampleFormat.Signed32,
+            // TODO: throw message too vague
             _ => throw new ArgumentOutOfRangeException(nameof(parameters), (IntPtr)parameters, null)
         };
     }
