@@ -2,16 +2,13 @@
 
 public class FFmpegSourceTests
 {
-    private const string BASE_URI = "https://vcup.moe/Share/SharpMusic.DllHellPTests";
-    private const string A0 = $@"{BASE_URI}/SoundSourceTests`0.flac";
-
     /// <summary>
     /// Temporary TestFixture, because remote data has not been determined
     /// </summary>
     [Test]
     public void Master_GetProperties_AllIsNotDefault()
     {
-        var uri = new Uri(A0);
+        var uri = new Uri(Album0);
         using var source = new FFmpegSource(uri);
 
         Assert.That(source.Uri, Is.EqualTo(uri));

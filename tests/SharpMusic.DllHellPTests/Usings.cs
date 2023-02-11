@@ -5,3 +5,4 @@ global using SharpMusic.DllHellP.LowLevelImpl;
 global using SharpMusic.DllHellP.Utils;
 global using SharpMusic.DllHellP.Extensions;
 global using SharpMusic.DllHellP.Exceptions;
+global using static SharpMusic.DllHellPTests.Constants;
