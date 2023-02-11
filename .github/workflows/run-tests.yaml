@@ -16,7 +16,7 @@ jobs:
         with:
           repository: BtbN/FFmpeg-Builds
           latest: true
-          fileName: ffmpeg-master-latest-linux64-gpl-shared.tar.xz
-      - run: tar -xvf ffmpeg-master-latest-linux64-gpl-shared.tar.xz
-      - run: cp -r ffmpeg-master-latest-linux64-gpl-shared/lib/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
+          fileName: ffmpeg-n5.1-latest-linux64-gpl-shared-5.1.tar.xz
+      - run: tar -xvf ffmpeg-*-latest-linux64-gpl-shared*.tar.xz
+      - run: cp -r ffmpeg-*-latest-linux64-gpl-shared*/lib/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
       - run: dotnet test
