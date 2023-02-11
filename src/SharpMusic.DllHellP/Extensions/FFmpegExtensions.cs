@@ -19,14 +19,15 @@ public static class FFmpegExtensions
 
     public static unsafe SampleFormat GetSampleFormat(AVCodecParameters* parameters)
     {
-        return GetBitDepth(parameters) switch
-            {
-                0 => SampleFormat.None,
-                8 when parameters->format is 0 => SampleFormat.Unsigned8,
-                16 when parameters->format > 0 => SampleFormat.Signed16,
-                32 when parameters->format > 0 => SampleFormat.Signed32,
-                _ => throw new ArgumentOutOfRangeException(nameof(parameters), (IntPtr)parameters, null)
-            };
+        if (parameters->codec_type is not AVMediaType.AVMEDIA_TYPE_AUDIO) return SampleFormat.None;
+        return parameters->format switch
+        {
+            -1 => SampleFormat.None,
+            0 => SampleFormat.Unsigned8,
+            1 => SampleFormat.Signed16,
+            2 => SampleFormat.Signed32,
+            _ => throw new ArgumentOutOfRangeException(nameof(parameters), (IntPtr)parameters, null)
+        };
     }
 
     public static unsafe int GetBitDepth(AVCodecParameters* parameters)
