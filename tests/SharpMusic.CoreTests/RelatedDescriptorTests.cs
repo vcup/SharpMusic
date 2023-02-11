@@ -1,4 +1,5 @@
-﻿using SharpMusic.Core.Descriptor;
+﻿using System.Diagnostics.CodeAnalysis;
+using SharpMusic.Core.Descriptor;
 using SharpMusic.Core.Utils;
 
 namespace SharpMusic.CoreTests;
@@ -131,12 +132,14 @@ public class RelatedDescriptorTests
 
         public Guid Guid { get; } = Guid.NewGuid();
 
+        [ExcludeFromCodeCoverage(Justification = "required for interface only")]
         public IList<string> Names
         {
             get => null!;
             set { }
         }
 
+        [ExcludeFromCodeCoverage(Justification = "required for interface only")]
         public string Description
         {
             get => string.Empty;
