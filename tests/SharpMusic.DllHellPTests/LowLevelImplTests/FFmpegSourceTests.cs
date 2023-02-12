@@ -4,21 +4,29 @@ namespace SharpMusic.DllHellPTests.LowLevelImplTests;
 
 public class FFmpegSourceTests
 {
-    /// <summary>
-    /// Temporary TestFixture, because remote data has not been determined
-    /// </summary>
-    [Test]
-    public void Master_GetProperties_AllIsNotDefault()
+    [ExcludeFromCodeCoverage]
+    // TODO: solve this
+    [Ignore($"hasn't way to make an file to test MetaInfo")]
+    [TestCaseSource(typeof(Constants), nameof(GetMetaInfos), new object[]
     {
-        var uri = new Uri(Album0);
-        using var source = new FFmpegSource(uri);
+        new[]
+        {
+            Album0, Album1, Album2, Video0
+        }
+    })]
+    public void Constructor_GetProperties_ReadingMetaInfoCorrect(string uri, IAudioMetaInfo excepted)
+    {
+        // arrange & act
+        using var source = new FFmpegSource(new Uri(uri));
 
-        Assert.That(source.Uri, Is.EqualTo(uri));
-        Assert.That(source.Duration.Ticks, Is.GreaterThan(0));
-        Assert.That(source.BitRate, Is.GreaterThan(0));
-        Assert.That(source.BitDepth, Is.GreaterThan(0));
-        Assert.That(source.Channels, Is.GreaterThan(0));
-        Assert.That(source.SampleRate, Is.GreaterThan(0));
+        // assert
+        Assert.That(source.Format, Is.EqualTo(excepted.Format));
+        Assert.That(source.Uri, Is.EqualTo(excepted.Uri));
+        Assert.That(source.BitRate, Is.EqualTo(excepted.BitRate));
+        Assert.That(source.BitDepth, Is.EqualTo(excepted.BitDepth));
+        Assert.That(source.Channels, Is.EqualTo(excepted.Channels));
+        Assert.That(source.SampleRate, Is.EqualTo(excepted.SampleRate));
+        Assert.That(source.Duration, Is.EqualTo(excepted.Duration));
     }
 
     [Test]

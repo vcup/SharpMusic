@@ -4,13 +4,10 @@ public static class Constants
 {
     private const string BASE_URI = "https://vcup.moe/Share/SharpMusic.DllHellPTests";
 
-    /// <summary>
-    /// TODO: summary there file meta information
-    /// </summary>
     public const string Album0 = $@"{BASE_URI}/SoundSourceTests`0.flac";
 
     public const string Album1 = $@"{BASE_URI}/SoundSourceTests`1.wav";
-    public const string Album2 = $@"{BASE_URI}/SoundSourceTests`2";
+    public const string Album2 = $@"{BASE_URI}/SoundSourceTests`2.mp3";
 
     public const string EmptyFile = $@"{BASE_URI}/SoundSourceTests`EmptyFile";
     public const string NoStream = $@"{BASE_URI}/SoundSourceTests`NoStream";
@@ -25,48 +22,48 @@ public static class Constants
             Album0, new AudioMetaInfo
             {
                 Uri = new Uri(Album0),
-                Duration = new TimeSpan(0),
+                Duration = new TimeSpan(TimeSpan.TicksPerSecond),
                 BitRate = 0,
-                BitDepth = 0,
-                Channels = 0,
-                SampleRate = 0,
-                Format = SampleFormat.None
+                BitDepth = 16,
+                Channels = 1,
+                SampleRate = 44100,
+                Format = SampleFormat.Signed16
             }
         },
         {
             Album1, new AudioMetaInfo
             {
                 Uri = new Uri(Album1),
-                Duration = new TimeSpan(0),
+                Duration = new TimeSpan(TimeSpan.TicksPerSecond / 2),
                 BitRate = 0,
-                BitDepth = 0,
-                Channels = 0,
-                SampleRate = 0,
-                Format = SampleFormat.None
+                BitDepth = 8,
+                Channels = 2,
+                SampleRate = 192000,
+                Format = SampleFormat.Unsigned8
             }
         },
         {
             Album2, new AudioMetaInfo
             {
                 Uri = new Uri(Album2),
-                Duration = new TimeSpan(0),
+                Duration = new TimeSpan(TimeSpan.TicksPerMillisecond * 100),
                 BitRate = 0,
-                BitDepth = 0,
-                Channels = 0,
-                SampleRate = 0,
-                Format = SampleFormat.None
+                BitDepth = 32,
+                Channels = 6,
+                SampleRate = 48000,
+                Format = SampleFormat.Float32Planar
             }
         },
         {
             Video0, new AudioMetaInfo
             {
                 Uri = new Uri(Video0),
-                Duration = new TimeSpan(0),
+                Duration = new TimeSpan(TimeSpan.TicksPerSecond / 2),
                 BitRate = 0,
-                BitDepth = 0,
-                Channels = 0,
-                SampleRate = 0,
-                Format = SampleFormat.None
+                BitDepth = 8,
+                Channels = 2,
+                SampleRate = 192000,
+                Format = SampleFormat.Float32Planar
             }
         },
     };
