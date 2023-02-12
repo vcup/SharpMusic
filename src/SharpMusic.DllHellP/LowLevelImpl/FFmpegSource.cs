@@ -31,14 +31,14 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
             ret = avformat_open_input(formatCtx, uri.OriginalString, null, null);
             if (ret < 0)
             {
-                throw new InvalidOperationException($"Cannot open uri {uri.OriginalString}");
+                throw new FFmpegOpenInputException($"Cannot open uri {uri.OriginalString}", ret);
             }
         }
 
         ret = avformat_find_stream_info(_formatCtx, null);
         if (ret < 0)
         {
-            throw new ArgumentException($@"Could not find stream information from {uri.OriginalString}", nameof(uri));
+            throw new FFmpegFindStreamException($@"Could not find stream information from {uri.OriginalString}", ret);
         }
 
         for (var i = 0; i < _formatCtx->nb_streams; i++)
