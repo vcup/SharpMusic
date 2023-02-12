@@ -13,6 +13,7 @@ public static class FFmpegHelper
 
     public static unsafe string AvStringErrorCode(int errorCode)
     {
+        if (errorCode > 0) errorCode = -errorCode;
         var buffer = stackalloc byte[ErrorMessageBufferSize];
         av_strerror(errorCode, buffer, ErrorMessageBufferSize);
         var message = Marshal.PtrToStringAnsi((IntPtr)buffer);
