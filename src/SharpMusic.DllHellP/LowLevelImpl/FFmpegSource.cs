@@ -38,6 +38,8 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
         ret = avformat_find_stream_info(_formatCtx, null);
         if (ret < 0)
         {
+            // hasn't way to make an file to cover FFmpegFindStreamException
+            // dotCover disable next line
             throw new FFmpegFindStreamException($@"Could not find stream information from {uri.OriginalString}", ret);
         }
 
