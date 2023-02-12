@@ -170,4 +170,37 @@ public class FFmepgExtensionsTests
         Assert.That(result.ParamName, Is.EqualTo(nameof(parameters)));
         Assert.That(result.ActualValue, Is.EqualTo((nint)(&parameters)));
     }
+
+    [Test]
+    public unsafe void GetBitDepth_NonZeroBitDepthInRaw_ReturnThem()
+    {
+        // arrange
+        var parameters = new AVCodecParameters
+        {
+            bits_per_raw_sample = 1,
+        };
+
+        // act
+        var result = FFmpegExtensions.GetBitDepth(&parameters);
+
+        // assert
+        Assert.That(result, Is.EqualTo(1));
+    }
+
+    [Test]
+    public unsafe void GetBitDepth_ZeroBitDepthInRaw_ReturnCodedBitDepth()
+    {
+        // arrange
+        var parameters = new AVCodecParameters
+        {
+            bits_per_raw_sample = 0,
+            bits_per_coded_sample = 1,
+        };
+
+        // act
+        var result = FFmpegExtensions.GetBitDepth(&parameters);
+
+        // assert
+        Assert.That(result, Is.EqualTo(1));
+    }
 }
