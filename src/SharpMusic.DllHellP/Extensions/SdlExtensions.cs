@@ -13,7 +13,9 @@ public static class SdlExtensions
             SampleFormat.Unsigned8 => AUDIO_U8,
             SampleFormat.Signed16 => AUDIO_S16,
             SampleFormat.Signed32 => AUDIO_S32,
-            _ => throw new ArgumentOutOfRangeException(nameof(format), format, null) // dotCover disable this line
+            _ => // already cover all case of SampleFormat enum
+                // dotCover disable next line
+                throw new ArgumentOutOfRangeException(nameof(format), format, null)
         };
     }
 }
