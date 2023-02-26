@@ -23,6 +23,7 @@ public static class SdlExtensions
                 SampleFormat.DoublePlanar or
                 SampleFormat.Signed64 or
                 SampleFormat.Signed64Planar or
+                // TODO: handle as exception, e.g. NotSupportException
                 SampleFormat.Other => AUDIO_S16SYS,
             _ => // already cover all case of SampleFormat enum
                 // dotCover disable next line
