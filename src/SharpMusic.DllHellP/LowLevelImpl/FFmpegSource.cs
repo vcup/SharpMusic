@@ -111,7 +111,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
 
     private unsafe void Dispose(bool disposing)
     {
-        if (!disposing) return;
+        if (!disposing || _isDisposed) return;
         fixed (AVPacket** pkt = &_pkt)
         fixed (AVFormatContext** formatCtx = &_formatCtx)
         {
@@ -153,14 +153,19 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
 
     public event FFmpegSourceEofHandler? SourceEofEvent;
 
+    /// <inheritdoc cref="ResetStream"/>
     public void Reset() => ResetStream();
 
+    /// <summary>
+    /// pointer to <see cref="AVPacket"/>
+    /// </summary>
     public unsafe IntPtr Current => (IntPtr)_pkt;
 
+    /// <inheritdoc cref="Current"/>
     object IEnumerator.Current => Current;
 
     ~FFmpegSource()
     {
-        Dispose();
+        Dispose(!_isDisposed);
     }
 }
