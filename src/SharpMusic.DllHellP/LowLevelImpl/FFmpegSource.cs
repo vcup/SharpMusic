@@ -1,4 +1,5 @@
-﻿using FFmpeg.AutoGen;
+﻿using System.Collections;
+using FFmpeg.AutoGen;
 using SharpMusic.DllHellP.Abstract;
 using SharpMusic.DllHellP.Exceptions;
 using SharpMusic.DllHellP.Extensions;
@@ -10,13 +11,13 @@ namespace SharpMusic.DllHellP.LowLevelImpl;
 /// <summary>
 /// provide pointer of <see cref="AVPacket"/> and some meta information of the stream
 /// </summary>
-public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnumerable<IntPtr>
+public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
 {
     private readonly object _lock = new();
     private readonly unsafe AVFormatContext* _formatCtx;
     private readonly unsafe AVStream* _stream;
     private readonly int _streamIndex;
-    private readonly IAsyncEnumerator<IntPtr> _pktEnumerator;
+    private readonly unsafe AVPacket* _pkt;
     private bool _isDisposed;
 
     private static readonly AVRational Second2Ticks =
@@ -50,21 +51,21 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
             break;
         }
 
-        _pktEnumerator = new PacketAsyncEnumerator(this, _formatCtx, _streamIndex);
+        _pkt = av_packet_alloc();
 
         Format = FFmpegExtensions.GetSampleFormat(_stream->codecpar);
     }
 
     public Uri Uri { get; }
+
     public unsafe TimeSpan Duration => TimeSpan.FromTicks(_formatCtx->duration * 10); // 1us = 10tick
 
     public unsafe TimeSpan Position
     {
         get
         {
-            var pkt = (AVPacket*)_pktEnumerator.Current;
-            if (pkt->duration <= 0) return TimeSpan.Zero;
-            var dts = pkt->dts;
+            if (_pkt->duration <= 0) return TimeSpan.Zero;
+            var dts = _pkt->dts;
 
             var timeBase = _stream->time_base;
             // av_rescale_q -> a*b/c
@@ -111,106 +112,52 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IDisposable, IAsyncEnu
     private unsafe void Dispose(bool disposing)
     {
         if (!disposing) return;
-        var task = _pktEnumerator.DisposeAsync();
-        while (!task.IsCompleted)
-        {
-        }
-
+        fixed (AVPacket** pkt = &_pkt)
         fixed (AVFormatContext** formatCtx = &_formatCtx)
         {
             avformat_close_input(formatCtx);
+            av_packet_free(pkt);
         }
 
         _isDisposed = true;
     }
 
-    /// <summary>
-    /// get async enumerator to iteration <see cref="IntPtr"/> of <see cref="AVPacket"/>
-    /// </summary>
-    /// <param name="cancellationToken">inherit from interface, but is will ignore</param>
-    /// <returns><see cref="IntPtr"/>point to <see cref="AVPacket"/></returns>
-    public IAsyncEnumerator<IntPtr> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+    public delegate void FFmpegSourceEofHandler(FFmpegSource sender);
+
+    public unsafe bool MoveNext()
     {
-        return _pktEnumerator;
+        if (_isDisposed) return false;
+        var ret = 0;
+
+        do
+        {
+            av_packet_unref(_pkt);
+            ret = av_read_frame(_formatCtx, _pkt);
+        } while (ret >= 0 && _pkt->stream_index != _streamIndex);
+
+        if (ret >= 0) return true;
+
+        if (ret != AVERROR_EOF) throw new FFmpegReadingFrameException(ret);
+
+
+        // invoke event from another thread because this method may call by AudioCallback, it will block the thread
+        InvokeEventAsync();
+
+        return false;
     }
 
-    public delegate void FFmpegSourceEofHandler(FFmpegSource sender);
+    private async void InvokeEventAsync()
+    {
+        await Task.Run(() => SourceEofEvent?.Invoke(this));
+    }
 
     public event FFmpegSourceEofHandler? SourceEofEvent;
 
-    private class PacketAsyncEnumerator : IAsyncEnumerator<IntPtr>
-    {
-        private readonly FFmpegSource _owner;
-        private readonly unsafe AVFormatContext* _ctx;
-        private readonly int _index;
-        private readonly unsafe AVPacket* _pkt;
-        private bool _isDisposed;
+    public void Reset() => ResetStream();
 
-        public unsafe PacketAsyncEnumerator(FFmpegSource owner, AVFormatContext* ctx, int index)
-        {
-            _owner = owner;
-            _ctx = ctx;
-            _index = index;
-            _pkt = av_packet_alloc();
-        }
+    public unsafe IntPtr Current => (IntPtr)_pkt;
 
-        public unsafe IntPtr Current => (IntPtr)_pkt;
-
-        public async ValueTask<bool> MoveNextAsync()
-        {
-            if (_isDisposed) return false;
-            var ret = 0;
-            await Task.Run(() =>
-            {
-                unsafe
-                {
-                    do
-                    {
-                        av_packet_unref(_pkt);
-                        ret = av_read_frame(_ctx, _pkt);
-                    } while (ret >= 0 && _pkt->stream_index != _index);
-                }
-            });
-
-            if (ret >= 0) return true;
-
-            if (ret != AVERROR_EOF) throw new FFmpegReadingFrameException(ret);
-
-            // invoke event from another thread because this method may call by AudioCallback, it will block the thread
-            InvokeEventAsync();
-
-            return false;
-        }
-
-        private async void InvokeEventAsync()
-        {
-            await Task.Run(() => _owner.SourceEofEvent?.Invoke(_owner));
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await DisposeAsync(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private ValueTask DisposeAsync(bool disposing)
-        {
-            if (!disposing && _isDisposed) return ValueTask.CompletedTask;
-            ReleaseUnmanagedResource();
-            _isDisposed = true;
-            return ValueTask.CompletedTask;
-        }
-
-        private unsafe void ReleaseUnmanagedResource()
-        {
-            av_packet_unref(_pkt);
-        }
-
-        ~PacketAsyncEnumerator()
-        {
-            ReleaseUnmanagedResource();
-        }
-    }
+    object IEnumerator.Current => Current;
 
     ~FFmpegSource()
     {
