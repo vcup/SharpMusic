@@ -15,7 +15,8 @@ jobs:
       - uses: robinraju/release-downloader@v1.6
         with:
           repository: BtbN/FFmpeg-Builds
-          latest: true
+          # latest: true
+          tag: latest
           fileName: ffmpeg-n5.1-latest-linux64-gpl-shared-5.1.tar.xz
       - run: tar -xvf ffmpeg-*-latest-linux64-gpl-shared*.tar.xz
       - run: cp -r ffmpeg-*-latest-linux64-gpl-shared*/lib/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
@@ -34,7 +35,8 @@ jobs:
       - uses: robinraju/release-downloader@v1.6
         with:
           repository: BtbN/FFmpeg-Builds
-          latest: true
+          # latest: true
+          tag: latest
           fileName: ffmpeg-n5.1-latest-win64-gpl-shared-5.1.zip
       - run: tar -xf ffmpeg-n5.1-latest-win64-gpl-shared-5.1.zip
       - run: cp -r ffmpeg-n5.1-latest-win64-gpl-shared-5.1/bin/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
