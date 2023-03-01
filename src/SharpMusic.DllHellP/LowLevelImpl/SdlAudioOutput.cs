@@ -38,7 +38,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
         return _out = new SdlOutDisposable(Device, wantSpec);
     }
 
-    public IDisposable Open(IAudioMetaInfo info, IAsyncEnumerable<IntPtr> frames, FFmpegResampler resampler)
+    public IDisposable Open(IAudioMetaInfo info, IEnumerator<IntPtr> frames, FFmpegResampler resampler)
     {
         var provider = new SdlAudioProvider(this, frames, resampler);
         var wantSpec = new SDL_AudioSpec
@@ -115,49 +115,30 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
     private class SdlAudioProvider
     {
         private readonly SdlAudioOutput _owner;
-        private readonly IAsyncEnumerator<IntPtr> _frames;
+        private readonly IEnumerator<IntPtr> _frames;
         private readonly FFmpegResampler _resampler;
-        private ValueTask<bool> _moveFrameTask;
         private byte[] _audioBuffer;
         private int _index;
-        private bool _alreadyBuffering;
 
         /// <param name="owner">Provider want know owner state for adjust volume and call <see cref="SdlAudioOutput.Stop"/> when end of stream</param>
         /// <param name="frames">normally assign <see cref="FFmpegDecoder"/></param>
         /// <param name="resampler"></param>
-        public SdlAudioProvider(SdlAudioOutput owner, IAsyncEnumerable<IntPtr> frames, FFmpegResampler resampler)
+        public SdlAudioProvider(SdlAudioOutput owner, IEnumerator<IntPtr> frames, FFmpegResampler resampler)
         {
             _owner = owner;
-            _frames = frames.GetAsyncEnumerator();
+            _frames = frames;
             _resampler = resampler;
             _audioBuffer = Array.Empty<byte>();
-
-            // need iter a frame first, but it not good
-            _moveFrameTask = _frames.MoveNextAsync();
         }
 
         public void AudioCallback(IntPtr userdata, IntPtr stream, int remainingLen)
         {
-            var len = remainingLen;
             while (remainingLen > 0)
             {
-                if (!_moveFrameTask.IsCompleted)
-                {
-                    // fill remaining byte with zero
-                    ExternMethod.RtlZeroMemory(stream, remainingLen);
-                    if (_alreadyBuffering) return;
-                    _owner.State = PlaybackState.Buffering;
-                    // if remaining len equal len, it meaning stream already all is zero
-                    // for skip fill memory multiple and avoid murmur
-                    _alreadyBuffering = remainingLen == len;
-                    return;
-                }
-
                 if (_index >= _audioBuffer.Length)
                 {
-                    if (!_moveFrameTask.Result) break;
+                    if (!_frames.MoveNext()) break;
                     _audioBuffer = _resampler.ResampleFrame(_frames.Current);
-                    _moveFrameTask = _frames.MoveNextAsync();
                     _index = 0;
                     Debug.Assert(_audioBuffer.Length is not 0);
                 }
@@ -195,7 +176,6 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
             }
 
             _owner.State = PlaybackState.Playing;
-            _alreadyBuffering = false;
             if (remainingLen <= 0) return;
             ExternMethod.RtlZeroMemory(stream, remainingLen);
             _owner.Pause();
