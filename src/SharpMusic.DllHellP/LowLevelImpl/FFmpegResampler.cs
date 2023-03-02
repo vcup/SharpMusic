@@ -11,24 +11,27 @@ namespace SharpMusic.DllHellP.LowLevelImpl;
 public class FFmpegResampler : IDisposable
 {
     private readonly unsafe AVCodecContext* _codecCtx;
-    private readonly AVSampleFormat _outFormat;
-    private readonly AVChannelLayout _outChannel;
-    private readonly int _outSampleRate;
+    private readonly AVSampleFormat _format;
+    private readonly AVChannelLayout _channel;
+    private readonly int _sampleRate;
     private readonly unsafe SwrContext* _swrCtx;
     private bool _isDisposed;
 
-    public unsafe FFmpegResampler(IntPtr codecCtx, AVSampleFormat outFormat, AVChannelLayout outChannel,
-        int outSampleRate)
+    public unsafe FFmpegResampler(IntPtr codecCtx, AVSampleFormat format, AVChannelLayout channel,
+        int sampleRate, bool isOutput = true)
     {
         _codecCtx = (AVCodecContext*)codecCtx;
-        _outFormat = outFormat;
-        _outChannel = outChannel;
-        _outSampleRate = outSampleRate;
+        _format = format;
+        _channel = channel;
+        _sampleRate = sampleRate;
         fixed (SwrContext** swrCtx = &_swrCtx)
-        fixed (AVChannelLayout* pOutChannel = &_outChannel)
+        fixed (AVChannelLayout* pChannel = &_channel)
         {
-            var ret = swr_alloc_set_opts2(swrCtx, pOutChannel, _outFormat, _outSampleRate,
-                &_codecCtx->ch_layout, _codecCtx->sample_fmt, _codecCtx->sample_rate, 0, null);
+            var ret = isOutput
+                ? swr_alloc_set_opts2(swrCtx, pChannel, _format, _sampleRate,
+                    &_codecCtx->ch_layout, _codecCtx->sample_fmt, _codecCtx->sample_rate, 0, null)
+                : swr_alloc_set_opts2(swrCtx, &_codecCtx->ch_layout, _codecCtx->sample_fmt, _codecCtx->sample_rate,
+                    pChannel, _format, _sampleRate, 0, null);
             Debug.Assert(ret >= 0);
             ret = swr_init(*swrCtx);
             Debug.Assert(ret is 0);
@@ -41,19 +44,19 @@ public class FFmpegResampler : IDisposable
         if (_isDisposed) return Array.Empty<byte>();
         long nbSamples;
         var maxNbSamples = nbSamples = av_rescale_rnd(
-            pFrame->nb_samples, _outSampleRate, _codecCtx->sample_rate, AVRounding.AV_ROUND_UP
+            pFrame->nb_samples, _sampleRate, _codecCtx->sample_rate, AVRounding.AV_ROUND_UP
         );
 
         byte** resampledData = null;
         var lineSize = 0;
         var ret = av_samples_alloc_array_and_samples(
-            &resampledData, &lineSize, _outChannel.nb_channels, (int)nbSamples, _outFormat, 0
+            &resampledData, &lineSize, _channel.nb_channels, (int)nbSamples, _format, 0
         );
         Debug.Assert(ret >= 0);
 
         nbSamples = av_rescale_rnd(
             swr_get_delay(_swrCtx, _codecCtx->sample_rate) +
-            pFrame->nb_samples, _outSampleRate, _codecCtx->sample_rate, AVRounding.AV_ROUND_UP
+            pFrame->nb_samples, _sampleRate, _codecCtx->sample_rate, AVRounding.AV_ROUND_UP
         );
         Debug.Assert(ret > 0);
 
@@ -61,7 +64,7 @@ public class FFmpegResampler : IDisposable
         {
             av_free(*resampledData);
             ret = av_samples_alloc(
-                resampledData, &lineSize, _outChannel.nb_channels, (int)nbSamples, _outFormat, 1
+                resampledData, &lineSize, _channel.nb_channels, (int)nbSamples, _format, 1
             );
 
             Debug.Assert(ret >= 0);
@@ -73,7 +76,7 @@ public class FFmpegResampler : IDisposable
             ret = swr_convert(_swrCtx, resampledData, (int)nbSamples, pFrame->extended_data, pFrame->nb_samples);
             Debug.Assert(ret >= 0);
 
-            resampledDataSize = av_samples_get_buffer_size(&lineSize, _outChannel.nb_channels, ret, _outFormat, 1);
+            resampledDataSize = av_samples_get_buffer_size(&lineSize, _channel.nb_channels, ret, _format, 1);
             Debug.Assert(resampledDataSize >= 0);
         }
         else
