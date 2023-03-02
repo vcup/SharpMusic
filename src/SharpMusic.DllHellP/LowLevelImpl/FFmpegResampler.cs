@@ -14,6 +14,7 @@ public class FFmpegResampler : IDisposable
     private readonly AVSampleFormat _format;
     private readonly AVChannelLayout _channel;
     private readonly int _sampleRate;
+    private readonly bool _isOutput;
     private readonly unsafe SwrContext* _swrCtx;
     private bool _isDisposed;
 
@@ -24,6 +25,7 @@ public class FFmpegResampler : IDisposable
         _format = format;
         _channel = channel;
         _sampleRate = sampleRate;
+        _isOutput = isOutput;
         fixed (SwrContext** swrCtx = &_swrCtx)
         fixed (AVChannelLayout* pChannel = &_channel)
         {
@@ -40,8 +42,8 @@ public class FFmpegResampler : IDisposable
 
     public unsafe byte[] ResampleFrame(IntPtr frame)
     {
+        if (!_isOutput || _isDisposed) return Array.Empty<byte>();
         var pFrame = (AVFrame*)frame;
-        if (_isDisposed) return Array.Empty<byte>();
         long nbSamples;
         var maxNbSamples = nbSamples = av_rescale_rnd(
             pFrame->nb_samples, _sampleRate, _codecCtx->sample_rate, AVRounding.AV_ROUND_UP
