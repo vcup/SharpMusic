@@ -5,9 +5,9 @@ namespace SharpMusic.DllHellP.Extensions;
 
 public static class FFmpegExtensions
 {
-    public static AVSampleFormat ToFmt(this SampleFormat format)
+    public static AVSampleFormat ToFmt(this SampleFormat format, bool allowPlanar = true)
     {
-        return format switch
+        var result = format switch
         {
             SampleFormat.None => AVSampleFormat.AV_SAMPLE_FMT_NONE,
             SampleFormat.Unsigned8 => AVSampleFormat.AV_SAMPLE_FMT_U8,
@@ -28,6 +28,8 @@ public static class FFmpegExtensions
                 // dotCover disable next line
                 throw new ArgumentOutOfRangeException(nameof(format), format, null)
         };
+
+        return allowPlanar ? result : ffmpeg.av_get_packed_sample_fmt(result);
     }
 
     public static unsafe SampleFormat GetSampleFormat(AVCodecParameters* parameters)
