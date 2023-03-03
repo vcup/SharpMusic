@@ -13,6 +13,7 @@ public class FFmpegDecoder : IEnumerator<IntPtr>
     private readonly FFmpegSource _source;
     private readonly unsafe AVCodecContext* _codecCtx;
     private readonly unsafe AVFrame* _frame;
+    private readonly unsafe AVPacket* _packet;
     private bool _isDisposed;
 
     public unsafe FFmpegDecoder(FFmpegSource source)
@@ -26,13 +27,13 @@ public class FFmpegDecoder : IEnumerator<IntPtr>
 
         ret = avcodec_open2(_codecCtx, codec, null);
         Debug.Assert(ret >= 0);
+        _packet = (AVPacket*)source.Current;
     }
 
     public unsafe bool MoveNext()
     {
         if (_isDisposed || !_source.MoveNext()) return false;
-        var pkt = _source.Current;
-        var ret = avcodec_send_packet(_codecCtx, (AVPacket*)pkt);
+        var ret = avcodec_send_packet(_codecCtx, _packet);
         if (ret < 0) return false;
         ret = avcodec_receive_frame(_codecCtx, _frame);
         return ret >= 0;
