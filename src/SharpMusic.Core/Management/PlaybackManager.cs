@@ -157,8 +157,8 @@ public class PlaybackManager
 
         _source = new FFmpegSource(Playlist[_playingIndex].SoundSource.First());
         _decoder = new FFmpegDecoder(_source);
-        _resampler =
-            new FFmpegResampler(_decoder.AvCodecCtx, _source.Format.ToFmt(), _source.ChannelLayout, _source.SampleRate);
+        _resampler = new FFmpegResampler
+            (_decoder.AvCodecCtx, _source.Format.ToFmt(false), _source.ChannelLayout, _source.SampleRate);
         _output.Open(_source, _decoder, _resampler);
         // rebinding event
         PlaybackMode = _playbackMode;

@@ -44,7 +44,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
         var wantSpec = new SDL_AudioSpec
         {
             freq = info.SampleRate,
-            format = info.Format.ToSdlFmt(),
+            format = info.Format.ToSdlFmt(true),
             channels = (byte)info.Channels,
             samples = 1024,
             callback = provider.AudioCallback,
