@@ -1,4 +1,4 @@
-﻿namespace SharpMusic.Core.Descriptor;
+namespace SharpMusic.Core.Descriptor;
 
 public interface IDescriptor
 {

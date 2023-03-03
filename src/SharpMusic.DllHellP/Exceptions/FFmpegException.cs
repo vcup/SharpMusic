@@ -1,4 +1,4 @@
-﻿using static SharpMusic.DllHellP.Utils.FFmpegHelper;
+using static SharpMusic.DllHellP.Utils.FFmpegHelper;
 
 namespace SharpMusic.DllHellP.Exceptions;
 

@@ -1,4 +1,4 @@
-﻿namespace SharpMusic.Core.ExpandInfo;
+namespace SharpMusic.Core.ExpandInfo;
 
 [Flags]
 public enum StaffContributionType

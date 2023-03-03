@@ -1,4 +1,4 @@
-﻿using SharpMusic.Core.Descriptor;
+using SharpMusic.Core.Descriptor;
 
 namespace SharpMusic.Core.ExpandInfo;
 

@@ -1,4 +1,4 @@
-﻿using SharpMusic.Core.Descriptor;
+using SharpMusic.Core.Descriptor;
 using SharpMusic.Core.Utils;
 using SharpMusic.DllHellP.Abstract;
 using SharpMusic.DllHellP.Extensions;

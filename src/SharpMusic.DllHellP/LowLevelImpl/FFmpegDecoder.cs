@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Diagnostics;
 using FFmpeg.AutoGen;
 using static FFmpeg.AutoGen.ffmpeg;

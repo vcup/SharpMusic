@@ -1,4 +1,4 @@
-﻿namespace SharpMusic.Core.Management;
+namespace SharpMusic.Core.Management;
 
 public abstract class DescriptorProviderBase : IDisposable
 {

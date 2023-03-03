@@ -1,4 +1,4 @@
-﻿namespace SharpMusic.DllHellP.Utils;
+namespace SharpMusic.DllHellP.Utils;
 
 /// <summary>
 /// map audio stream format between FFmpeg SDL2

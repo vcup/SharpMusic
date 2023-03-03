@@ -1,4 +1,4 @@
-﻿namespace SharpMusic.DllHellP.Exceptions;
+namespace SharpMusic.DllHellP.Exceptions;
 
 public class FFmpegFindStreamException : FFmpegException
 {

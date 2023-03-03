@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using SharpMusic.Core.Descriptor;
 using SharpMusic.Core.Management;
 using static SDL2.SDL;

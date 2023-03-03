@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using FFmpeg.AutoGen;
 using static FFmpeg.AutoGen.ffmpeg;

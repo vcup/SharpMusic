@@ -1,4 +1,4 @@
-﻿namespace SharpMusic.DllHellPTests;
+namespace SharpMusic.DllHellPTests;
 
 public static class Constants
 {

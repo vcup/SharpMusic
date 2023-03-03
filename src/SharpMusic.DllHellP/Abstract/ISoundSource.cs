@@ -1,4 +1,4 @@
-﻿namespace SharpMusic.DllHellP.Abstract;
+namespace SharpMusic.DllHellP.Abstract;
 
 public interface ISoundSource
 {

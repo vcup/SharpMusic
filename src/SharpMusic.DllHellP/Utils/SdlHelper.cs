@@ -1,4 +1,4 @@
-﻿using SDL2;
+using SDL2;
 
 namespace SharpMusic.DllHellP.Utils;
 

@@ -1,4 +1,4 @@
-﻿namespace SharpMusic.Core.Utils;
+namespace SharpMusic.Core.Utils;
 
 public enum PlaybackMode
 {

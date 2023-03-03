@@ -1,4 +1,4 @@
-﻿name: running unit tests
+name: running unit tests
 on: [push]
 jobs:
   linux-ubuntu:

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using FFmpeg.AutoGen;
 using SharpMusic.DllHellP.Abstract;
 using SharpMusic.DllHellP.Exceptions;

@@ -1,4 +1,4 @@
-﻿using SharpMusic.Core.Utils;
+using SharpMusic.Core.Utils;
 
 namespace SharpMusic.Core.Descriptor;
 

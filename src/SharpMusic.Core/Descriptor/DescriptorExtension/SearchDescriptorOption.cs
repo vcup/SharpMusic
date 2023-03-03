@@ -1,4 +1,4 @@
-﻿namespace SharpMusic.Core.Descriptor.DescriptorExtension;
+namespace SharpMusic.Core.Descriptor.DescriptorExtension;
 
 [Flags]
 public enum SearchDescriptorOption

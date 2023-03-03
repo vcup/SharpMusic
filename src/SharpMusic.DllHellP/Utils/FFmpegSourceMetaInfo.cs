@@ -1,4 +1,4 @@
-﻿using FFmpeg.AutoGen;
+using FFmpeg.AutoGen;
 using SharpMusic.DllHellP.Abstract;
 using SharpMusic.DllHellP.Extensions;
 using static FFmpeg.AutoGen.ffmpeg;

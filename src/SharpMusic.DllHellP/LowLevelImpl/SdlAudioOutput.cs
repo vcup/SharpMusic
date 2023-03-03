@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using static SDL2.SDL;
 using SharpMusic.DllHellP.Abstract;
