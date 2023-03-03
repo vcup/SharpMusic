@@ -1,26 +1,26 @@
 namespace SharpMusic.DllHellP.Utils;
 
 /// <summary>
-/// map audio stream format between FFmpeg SDL2
+/// map audio stream format between FFmpeg and SDL2
 /// </summary>
-/// <remarks>
-/// <br/> FFmpeg             -> this            -> SDL2
-/// <br/> AV_SAMPLE_FMT_None -> None
-/// <br/> AV_SAMPLE_FMT_U8   -> Unsigned8       -> AUDIO_U8
-/// <br/> AV_SAMPLE_FMT_S16  -> Signed16        -> AUDIO_S16SYS
-/// <br/>                    -> Unsigned16      -> AUDIO_U16SYS
-/// <br/> AV_SAMPLE_FMT_S32  -> Signed32        -> AUDIO_S32SYS
-/// <br/> AV_SAMPLE_FMT_FLT  -> Float32         -> AUDIO_F32SYS
-/// <br/> AV_SAMPLE_FMT_DBL  -> Double
-/// <br/> AV_SAMPLE_FMT_U8P  -> Unsigned8Planar
-/// <br/> AV_SAMPLE_FMT_S16P -> Signed16Planar
-/// <br/> AV_SAMPLE_FMT_S32P -> Signed32Planar
-/// <br/> AV_SAMPLE_FMT_FLTP -> Float32Planar
-/// <br/> AV_SAMPLE_FMT_DBLP -> DoublePlanar
-/// <br/> AV_SAMPLE_FMT_S64  -> Signed64
-/// <br/> AV_SAMPLE_FMT_S64P -> Signed64Planar
-/// <br/> AV_SAMPLE_FMT_NB   -> Other
-/// </remarks>
+/// <remarks><c>
+/// <br/> FFmpeg - - - - - - -> SampleFormat - - > SDL2
+/// <br/> AV_SAMPLE_FMT_None -> None - - - - - - > (doesn't exist)
+/// <br/> AV_SAMPLE_FMT_U8 - -> Unsigned8 - - - -> AUDIO_U8
+/// <br/> AV_SAMPLE_FMT_S16 - > Signed16 - - - - > AUDIO_S16SYS
+/// <br/> (doesn't exist) - - > Unsigned16 - - - > AUDIO_U16SYS
+/// <br/> AV_SAMPLE_FMT_S32 - > Signed32 - - - - > AUDIO_S32SYS
+/// <br/> AV_SAMPLE_FMT_FLT - > Float32 - - - - -> AUDIO_F32SYS
+/// <br/> AV_SAMPLE_FMT_DBL - > Double - - - - - > (doesn't exist)
+/// <br/> AV_SAMPLE_FMT_U8P - > Unsigned8Planar -> (doesn't exist)
+/// <br/> AV_SAMPLE_FMT_S16P -> Signed16Planar - > (doesn't exist)
+/// <br/> AV_SAMPLE_FMT_S32P -> Signed32Planar - > (doesn't exist)
+/// <br/> AV_SAMPLE_FMT_FLTP -> Float32Planar - -> (doesn't exist)
+/// <br/> AV_SAMPLE_FMT_DBLP -> DoublePlanar - - > (doesn't exist)
+/// <br/> AV_SAMPLE_FMT_S64 - > Signed64 - - - - > (doesn't exist)
+/// <br/> AV_SAMPLE_FMT_S64P -> Signed64Planar - > (doesn't exist)
+/// <br/> AV_SAMPLE_FMT_NB - -> Other - - - - - -> (doesn't exist)
+/// </c></remarks>
 public enum SampleFormat
 {
     /// <summary><c>
