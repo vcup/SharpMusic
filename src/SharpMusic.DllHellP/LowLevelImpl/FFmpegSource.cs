@@ -122,6 +122,15 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
         _isDisposed = true;
     }
 
+    public unsafe bool WritePacket(AVRational srcTimebase)
+    {
+        if (!srcTimebase.Equals(_stream->time_base)) av_packet_rescale_ts(_pkt, srcTimebase, _stream->time_base);
+        _pkt->stream_index = _streamIndex;
+        var ret = av_interleaved_write_frame(_formatCtx, _pkt);
+        if (ret < 0) throw new FFmpegException(ret);
+        return true;
+    }
+
     public delegate void FFmpegSourceEofHandler(FFmpegSource sender);
 
     public unsafe bool MoveNext()

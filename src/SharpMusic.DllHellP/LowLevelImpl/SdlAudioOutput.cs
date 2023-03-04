@@ -110,7 +110,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
     }
 
     /// <summary>
-    /// combine Frame provider (like <see cref="FFmpegDecoder"/>) and <see cref="FFmpegResampler"/> for provider sound wave to SDL Audio Subsystem
+    /// combine Frame provider (like <see cref="FFmpegCodec"/>) and <see cref="FFmpegResampler"/> for provider sound wave to SDL Audio Subsystem
     /// </summary>
     private class SdlAudioProvider
     {
@@ -121,7 +121,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
         private int _index;
 
         /// <param name="owner">Provider want know owner state for adjust volume and call <see cref="SdlAudioOutput.Stop"/> when end of stream</param>
-        /// <param name="frames">normally assign <see cref="FFmpegDecoder"/></param>
+        /// <param name="frames">normally assign <see cref="FFmpegCodec"/></param>
         /// <param name="resampler"></param>
         public SdlAudioProvider(SdlAudioOutput owner, IEnumerator<IntPtr> frames, FFmpegResampler resampler)
         {

@@ -11,7 +11,7 @@ public class PlaybackManager
 {
     private readonly SdlAudioOutput _output;
     private FFmpegSource? _source;
-    private FFmpegDecoder? _decoder;
+    private FFmpegCodec? _decoder;
     private FFmpegResampler? _resampler;
     private int _playingIndex;
     private PlaybackMode _playbackMode;
@@ -156,7 +156,7 @@ public class PlaybackManager
         _resampler?.Dispose();
 
         _source = new FFmpegSource(Playlist[_playingIndex].SoundSource.First());
-        _decoder = new FFmpegDecoder(_source);
+        _decoder = FFmpegCodec.CreateDecoder(_source);
         _resampler = new FFmpegResampler
             (_decoder.AvCodecCtx, _source.Format.ToFmt(false), _source.ChannelLayout, _source.SampleRate);
         _output.Open(_source, _decoder, _resampler);

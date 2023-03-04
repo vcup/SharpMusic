@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Diagnostics;
 using FFmpeg.AutoGen;
+using SharpMusic.DllHellP.Exceptions;
 using static FFmpeg.AutoGen.ffmpeg;
 
 namespace SharpMusic.DllHellP.LowLevelImpl;
@@ -8,31 +9,55 @@ namespace SharpMusic.DllHellP.LowLevelImpl;
 /// <summary>
 /// decode <see cref="AVPacket"/> from <see cref="FFmpegSource"/>, provide pointer of <see cref="AVFrame"/>
 /// </summary>
-public class FFmpegDecoder : IEnumerator<IntPtr>
+public class FFmpegCodec : IEnumerator<IntPtr>
 {
     private readonly FFmpegSource _source;
+    private readonly bool _isDecoder;
     private readonly unsafe AVCodecContext* _codecCtx;
     private readonly unsafe AVFrame* _frame;
     private readonly unsafe AVPacket* _packet;
     private bool _isDisposed;
 
-    public unsafe FFmpegDecoder(FFmpegSource source)
+    private unsafe FFmpegCodec(FFmpegSource source, bool isDecoder)
     {
         _source = source;
-        var codec = avcodec_find_decoder(_source.AvCodecParameters->codec_id);
+        _isDecoder = isDecoder;
+        var codec = isDecoder
+            ? avcodec_find_decoder(_source.AvCodecParameters->codec_id)
+            : avcodec_find_encoder(_source.AvCodecParameters->codec_id);
+
         _codecCtx = avcodec_alloc_context3(codec);
-        _frame = av_frame_alloc();
         var ret = avcodec_parameters_to_context(_codecCtx, _source.AvCodecParameters);
         Debug.Assert(ret is 0);
 
         ret = avcodec_open2(_codecCtx, codec, null);
         Debug.Assert(ret >= 0);
         _packet = (AVPacket*)source.Current;
+        if (!isDecoder) return;
+        _frame = av_frame_alloc();
+    }
+
+    public static FFmpegCodec CreateDecoder(FFmpegSource source) => new(source, true);
+    public static FFmpegCodec CreateEncoder(FFmpegSource source) => new(source, false);
+
+    public unsafe bool WriteFrame(AVFrame* frame)
+    {
+        if (_isDecoder || _isDisposed) return false;
+        var ret = avcodec_send_frame(_codecCtx, frame);
+        Debug.Assert(ret >= 0);
+        do
+        {
+            ret = avcodec_receive_packet(_codecCtx, _packet);
+            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) break;
+            if (ret < 0) throw new FFmpegException(ret);
+        } while (_source.WritePacket(_codecCtx->time_base));
+
+        return true;
     }
 
     public unsafe bool MoveNext()
     {
-        if (_isDisposed || !_source.MoveNext()) return false;
+        if (!_isDecoder || _isDisposed || !_source.MoveNext()) return false;
         var ret = avcodec_send_packet(_codecCtx, _packet);
         if (ret < 0) return false;
         ret = avcodec_receive_frame(_codecCtx, _frame);
@@ -69,7 +94,7 @@ public class FFmpegDecoder : IEnumerator<IntPtr>
         _isDisposed = true;
     }
 
-    ~FFmpegDecoder()
+    ~FFmpegCodec()
     {
         Dispose(!_isDisposed);
     }
