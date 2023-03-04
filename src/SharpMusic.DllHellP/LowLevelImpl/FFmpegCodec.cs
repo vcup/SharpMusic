@@ -40,7 +40,7 @@ public class FFmpegCodec : IEnumerator<IntPtr>
     public static FFmpegCodec CreateDecoder(FFmpegSource source) => new(source, true);
     public static FFmpegCodec CreateEncoder(FFmpegSource source) => new(source, false);
 
-    public unsafe bool WriteFrame(AVFrame* frame)
+    public unsafe bool EncodeFrameAndWrite(AVFrame* frame)
     {
         if (_isDecoder || _isDisposed) return false;
         var ret = avcodec_send_frame(_codecCtx, frame);
