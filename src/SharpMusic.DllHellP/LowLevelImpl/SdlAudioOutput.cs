@@ -135,7 +135,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
         public unsafe void AudioCallback(IntPtr userdata, IntPtr stream, int remainingLen)
         {
             var bufferLength = 0;
-            AVFrame* pFrame = null;
+            var pFrame = (AVFrame*)_frames.Current;
             while (remainingLen > 0)
             {
                 if (_index >= bufferLength)
@@ -148,7 +148,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
                     }
                     else
                     {
-                        _audioBuffer = _resampler.ResampleFrame((AVFrame*)_frames.Current);
+                        _audioBuffer = _resampler.ResampleFrame(pFrame);
                         bufferLength = _audioBuffer.Length;
                     }
 
