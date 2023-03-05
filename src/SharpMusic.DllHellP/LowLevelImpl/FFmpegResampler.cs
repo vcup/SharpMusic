@@ -40,13 +40,12 @@ public class FFmpegResampler : IDisposable
         }
     }
 
-    public unsafe byte[] ResampleFrame(IntPtr frame)
+    public unsafe byte[] ResampleFrame(AVFrame* frame)
     {
         if (!_isOutput || _isDisposed) return Array.Empty<byte>();
-        var pFrame = (AVFrame*)frame;
         long nbSamples;
         var maxNbSamples = nbSamples = av_rescale_rnd(
-            pFrame->nb_samples, _sampleRate, _codecCtx->sample_rate, AVRounding.AV_ROUND_UP
+            frame->nb_samples, _sampleRate, _codecCtx->sample_rate, AVRounding.AV_ROUND_UP
         );
 
         byte** resampledData = null;
@@ -58,7 +57,7 @@ public class FFmpegResampler : IDisposable
 
         nbSamples = av_rescale_rnd(
             swr_get_delay(_swrCtx, _codecCtx->sample_rate) +
-            pFrame->nb_samples, _sampleRate, _codecCtx->sample_rate, AVRounding.AV_ROUND_UP
+            frame->nb_samples, _sampleRate, _codecCtx->sample_rate, AVRounding.AV_ROUND_UP
         );
         Debug.Assert(ret > 0);
 
@@ -75,7 +74,7 @@ public class FFmpegResampler : IDisposable
         int resampledDataSize;
         if (_swrCtx is not null)
         {
-            ret = swr_convert(_swrCtx, resampledData, (int)nbSamples, pFrame->extended_data, pFrame->nb_samples);
+            ret = swr_convert(_swrCtx, resampledData, (int)nbSamples, frame->extended_data, frame->nb_samples);
             Debug.Assert(ret >= 0);
 
             resampledDataSize = av_samples_get_buffer_size(&lineSize, _channel.nb_channels, ret, _format, 1);

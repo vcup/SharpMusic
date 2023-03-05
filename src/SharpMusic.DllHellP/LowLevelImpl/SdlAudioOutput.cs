@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using FFmpeg.AutoGen;
 using static SDL2.SDL;
 using SharpMusic.DllHellP.Abstract;
 using SharpMusic.DllHellP.Extensions;
@@ -138,7 +139,10 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
                 if (_index >= _audioBuffer.Length)
                 {
                     if (!_frames.MoveNext()) break;
-                    _audioBuffer = _resampler.ResampleFrame(_frames.Current);
+                    unsafe
+                    {
+                        _audioBuffer = _resampler.ResampleFrame((AVFrame*)_frames.Current);
+                    }
                     _index = 0;
                     Debug.Assert(_audioBuffer.Length is not 0);
                 }
