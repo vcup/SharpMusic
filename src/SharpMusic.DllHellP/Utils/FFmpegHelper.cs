@@ -1,15 +1,15 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using FFmpeg.AutoGen;
 using static FFmpeg.AutoGen.ffmpeg;
 
 namespace SharpMusic.DllHellP.Utils;
 
-[SuppressMessage("ReSharper", "InconsistentNaming")]
 public static class FFmpegHelper
 {
+    // ReSharper disable InconsistentNaming
     private const int ErrorMessageBufferSize = 1024;
     public static readonly AVRational AV_TIME_BASE_Q = new() { num = 1, den = AV_TIME_BASE };
+    // ReSharper restore InconsistentNaming
 
     public static unsafe string AvStringErrorCode(int errorCode)
     {
