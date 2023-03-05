@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using FFmpeg.AutoGen;
+using SDL2;
 using static SDL2.SDL;
 using SharpMusic.DllHellP.Abstract;
 using SharpMusic.DllHellP.Extensions;
@@ -132,6 +133,12 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
             _audioBuffer = Array.Empty<byte>();
         }
 
+        /// <summary>
+        /// provide SDL2 AudioOutput callback, read frame and write audio data into stream
+        /// </summary>
+        /// <param name="userdata">set in wantSpec when calling <see cref="SDL.SDL_OpenAudioDevice(System.String,int,ref SDL2.SDL.SDL_AudioSpec,out SDL2.SDL.SDL_AudioSpec,int)"/></param>
+        /// <param name="stream">byte stream, will write data from frame, ownership on SDL2</param>
+        /// <param name="remainingLen">buffer lenght of stream</param>
         public unsafe void AudioCallback(IntPtr userdata, IntPtr stream, int remainingLen)
         {
             var bufferLength = 0;

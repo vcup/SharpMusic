@@ -6,6 +6,21 @@ namespace SharpMusic.DllHellP.Extensions;
 
 public static class SampleFormatExtensions
 {
+    /// <summary>
+    /// map <see cref="SampleFormat"/> to SDL2 AUDIO_* format
+    /// </summary>
+    /// <param name="format">source format</param>
+    /// <param name="fallback">
+    /// when format hasn't corresponding AUDIO_*,
+    /// set as true can fallback to <see cref="SDL2.SDL.AUDIO_S16SYS"/>
+    /// </param>
+    /// <returns>mapped value of AUDIO_* from <see cref="SampleFormat"/></returns>
+    /// <exception cref="NotSupportedException">
+    /// format is <see cref="SampleFormat"/>.<see cref="SampleFormat.None"/>
+    /// <br/>-or-<br/>
+    /// format hasn't any corresponding SDL2 Audio format and fallback is false
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
     public static ushort ToSdlFmt(this SampleFormat format, bool fallback = false)
     {
         return fallback
@@ -42,6 +57,14 @@ public static class SampleFormatExtensions
             };
     }
 
+    /// <summary>
+    /// mapping <see cref="SampleFormat"/> to <see cref="AVSampleFormat"/>
+    /// </summary>
+    /// <param name="format">will mapping format</param>
+    /// <param name="allowPlanar">when false, will convert result to alt packet format</param>
+    /// <returns>mapped <see cref="AVSampleFormat"/></returns>
+    /// <exception cref="NotSupportedException">format is <see cref="SampleFormat"/>.<see cref="SampleFormat.Unsigned16"/></exception>
+    /// <exception cref="ArgumentOutOfRangeException">when format out of range of <see cref="SampleFormat"/></exception>
     public static AVSampleFormat ToFmt(this SampleFormat format, bool allowPlanar = true)
     {
         var result = format switch
@@ -69,6 +92,9 @@ public static class SampleFormatExtensions
         return allowPlanar ? result : ffmpeg.av_get_packed_sample_fmt(result);
     }
 
+    /// <summary>
+    /// get whether the <see cref="SampleFormat"/> is support between FFmpeg and SDL2
+    /// </summary>
     public static bool IsSupportFFmpegAndSdl2(this SampleFormat format) => format is
         SampleFormat.Unsigned8 or
         SampleFormat.Signed16 or

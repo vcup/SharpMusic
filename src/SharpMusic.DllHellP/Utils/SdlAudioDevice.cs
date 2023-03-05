@@ -27,6 +27,9 @@ public class SdlAudioDevice
     public static SdlAudioDevice[] AvailableOutputDevices { get; private set; }
     public static SdlAudioDevice[] AvailableInputDevices { get; private set; }
 
+    /// <summary>
+    /// flush the array of <see cref="AvailableOutputDevices"/> and <see cref="AvailableInputDevices"/>
+    /// </summary>
     public static void FlushDevices()
     {
         AvailableOutputDevices = Enumerable

@@ -6,7 +6,7 @@ using static FFmpeg.AutoGen.ffmpeg;
 namespace SharpMusic.DllHellP.LowLevelImpl;
 
 /// <summary>
-/// provide resample frame method, using swr api
+/// provide resample frame method, using lib swresample api
 /// </summary>
 public class FFmpegResampler : IDisposable
 {
@@ -18,6 +18,16 @@ public class FFmpegResampler : IDisposable
     private readonly unsafe SwrContext* _swrCtx;
     private bool _isDisposed;
 
+    /// <summary>
+    /// wrapper core feature for lib swresample, convert samples from a format to another
+    /// </summary>
+    /// <param name="codecCtx">
+    /// pointer of <see cref="AVCodecContext"/>, get frame format from the context
+    /// </param>
+    /// <param name="format">convert samples data to the format, when isOutput is true, it meaning output format</param>
+    /// <param name="channel">convert samples data to the channel layout, similar as format</param>
+    /// <param name="sampleRate">convert samples data to the sample rate, similar as format</param>
+    /// <param name="isOutput">is use for output from frame when true, otherwise is for input to frame</param>
     public unsafe FFmpegResampler(IntPtr codecCtx, AVSampleFormat format, AVChannelLayout channel,
         int sampleRate, bool isOutput = true)
     {
@@ -40,6 +50,16 @@ public class FFmpegResampler : IDisposable
         }
     }
 
+    /// <summary>
+    /// convert the <see cref="AVFrame"/> to byte array
+    /// </summary>
+    /// <remarks>
+    /// when disposed or is not initialized for output, return empty array of byte
+    /// </remarks>
+    /// <param name="frame">
+    /// pointer to <see cref="AVFrame"/>, must received from initialized <see cref="AVCodecContext"/>
+    /// </param>
+    /// <returns>converted byte array with specified argument in constructor</returns>
     public unsafe byte[] ResampleFrame(AVFrame* frame)
     {
         if (!_isOutput || _isDisposed) return Array.Empty<byte>();
