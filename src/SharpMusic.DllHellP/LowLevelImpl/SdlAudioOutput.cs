@@ -143,8 +143,8 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
                     if (!_frames.MoveNext()) break;
                     if (_resampler is null)
                     {
-                        pFrame = (AVFrame*)_frames.Current;
-                        bufferLength = pFrame->nb_samples * ffmpeg.av_get_bytes_per_sample((AVSampleFormat)pFrame->format);
+                        bufferLength = pFrame->nb_samples * pFrame->ch_layout.nb_channels *
+                                       ffmpeg.av_get_bytes_per_sample((AVSampleFormat)pFrame->format);
                     }
                     else
                     {
