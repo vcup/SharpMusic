@@ -165,8 +165,8 @@ public class FFmepgExtensionsTests
         )!;
 
         // assert
-        Assert.That(result.ParamName, Is.EqualTo(nameof(parameters)));
-        Assert.That(result.ActualValue, Is.EqualTo((nint)(&parameters)));
+        Assert.That(result.ParamName, Is.EqualTo(nameof(parameters.format)));
+        Assert.That(result.ActualValue, Is.EqualTo(parameters.format));
     }
 
     [Test]
