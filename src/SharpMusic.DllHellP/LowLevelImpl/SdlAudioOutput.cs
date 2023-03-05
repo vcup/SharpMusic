@@ -168,7 +168,8 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
                         fixed (byte* data = _audioBuffer)
                         {
                             ExternMethod.RtlZeroMemory(stream, processLen);
-                            SDL_MixAudioFormat(stream, (IntPtr)(data + _index), AUDIO_S16, (uint)processLen, _owner.Volume);
+                            SDL_MixAudioFormat(stream, (IntPtr)(data + _index), _owner._out!.Spec.format,
+                                (uint)processLen, _owner.Volume);
                         }
                     }
                 }
