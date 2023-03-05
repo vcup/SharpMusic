@@ -39,7 +39,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
         return _out = new SdlOutDisposable(Device, wantSpec);
     }
 
-    public IDisposable Open(IAudioMetaInfo info, IEnumerator<IntPtr> frames, FFmpegResampler resampler)
+    public IDisposable Open(IAudioMetaInfo info, IEnumerator<IntPtr> frames, FFmpegResampler? resampler)
     {
         var provider = new SdlAudioProvider(this, frames, resampler);
         var wantSpec = new SDL_AudioSpec
@@ -117,14 +117,14 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
     {
         private readonly SdlAudioOutput _owner;
         private readonly IEnumerator<IntPtr> _frames;
-        private readonly FFmpegResampler _resampler;
+        private readonly FFmpegResampler? _resampler;
         private byte[] _audioBuffer;
         private int _index;
 
         /// <param name="owner">Provider want know owner state for adjust volume and call <see cref="SdlAudioOutput.Stop"/> when end of stream</param>
         /// <param name="frames">normally assign <see cref="FFmpegCodec"/></param>
-        /// <param name="resampler"></param>
-        public SdlAudioProvider(SdlAudioOutput owner, IEnumerator<IntPtr> frames, FFmpegResampler resampler)
+        /// <param name="resampler">using resample to get audio wave, direct use frame->extended_data when null</param>
+        public SdlAudioProvider(SdlAudioOutput owner, IEnumerator<IntPtr> frames, FFmpegResampler? resampler = null)
         {
             _owner = owner;
             _frames = frames;
@@ -132,22 +132,31 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
             _audioBuffer = Array.Empty<byte>();
         }
 
-        public void AudioCallback(IntPtr userdata, IntPtr stream, int remainingLen)
+        public unsafe void AudioCallback(IntPtr userdata, IntPtr stream, int remainingLen)
         {
+            var bufferLength = 0;
+            AVFrame* pFrame = null;
             while (remainingLen > 0)
             {
-                if (_index >= _audioBuffer.Length)
+                if (_index >= bufferLength)
                 {
                     if (!_frames.MoveNext()) break;
-                    unsafe
+                    if (_resampler is null)
+                    {
+                        pFrame = (AVFrame*)_frames.Current;
+                        bufferLength = pFrame->nb_samples * ffmpeg.av_get_bytes_per_sample((AVSampleFormat)pFrame->format);
+                    }
+                    else
                     {
                         _audioBuffer = _resampler.ResampleFrame((AVFrame*)_frames.Current);
+                        bufferLength = _audioBuffer.Length;
                     }
+
                     _index = 0;
-                    Debug.Assert(_audioBuffer.Length is not 0);
+                    Debug.Assert(bufferLength is not 0);
                 }
 
-                var processLen = _audioBuffer.Length - _index;
+                var processLen = bufferLength - _index;
                 if (processLen > remainingLen)
                 {
                     processLen = remainingLen;
@@ -163,14 +172,14 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
                 }
                 else
                 {
-                    unsafe
+                    fixed (byte* data = _audioBuffer)
                     {
-                        fixed (byte* data = _audioBuffer)
-                        {
-                            ExternMethod.RtlZeroMemory(stream, processLen);
-                            SDL_MixAudioFormat(stream, (IntPtr)(data + _index), _owner._out!.Spec.format,
-                                (uint)processLen, _owner.Volume);
-                        }
+                        ExternMethod.RtlZeroMemory(stream, processLen);
+                        var src = _resampler is null
+                            ? *pFrame->extended_data + _index
+                            : data + _index;
+                        SDL_MixAudioFormat(stream, (IntPtr)src, _owner._out!.Spec.format,
+                            (uint)processLen, _owner.Volume);
                     }
                 }
 
