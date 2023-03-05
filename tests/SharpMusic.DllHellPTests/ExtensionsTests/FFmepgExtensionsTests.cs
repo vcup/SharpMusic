@@ -166,7 +166,7 @@ public class FFmepgExtensionsTests
 
         // assert
         Assert.That(result.ParamName, Is.EqualTo(nameof(parameters.format)));
-        Assert.That(result.ActualValue, Is.EqualTo(parameters.format));
+        Assert.That(result.ActualValue, Is.EqualTo((AVSampleFormat)parameters.format));
     }
 
     [Test]
