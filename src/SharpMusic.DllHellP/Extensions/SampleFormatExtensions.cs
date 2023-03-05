@@ -68,4 +68,10 @@ public static class SampleFormatExtensions
 
         return allowPlanar ? result : ffmpeg.av_get_packed_sample_fmt(result);
     }
+
+    public static bool IsSupportFFmpegAndSdl2(this SampleFormat format) => format is
+        SampleFormat.Unsigned8 or
+        SampleFormat.Signed16 or
+        SampleFormat.Signed32 or
+        SampleFormat.Float32;
 }
