@@ -1,6 +1,5 @@
 using FFmpeg.AutoGen;
 using SharpMusic.DllHellP.Abstract;
-using SharpMusic.DllHellP.Extensions;
 using static FFmpeg.AutoGen.ffmpeg;
 
 namespace SharpMusic.DllHellP.Utils;
@@ -38,7 +37,7 @@ public class FFmpegSourceMetaInfo : IAudioMetaInfo
             BitDepth = stream->codecpar->bits_per_coded_sample;
             Channels = stream->codecpar->ch_layout.nb_channels;
             SampleRate = stream->codecpar->sample_rate;
-            Format = FFmpegExtensions.GetSampleFormat(stream->codecpar);
+            Format = FFmpegHelper.GetSampleFormat(stream->codecpar);
             break;
         }
 

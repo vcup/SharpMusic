@@ -1,5 +1,3 @@
-using FFmpeg.AutoGen;
-
 namespace SharpMusic.DllHellPTests.ExtensionsTests;
 
 public class FFmepgExtensionsTests
@@ -74,7 +72,7 @@ public class FFmepgExtensionsTests
 
         // act
         var result = Assert.Catch<ArgumentException>(() =>
-            FFmpegExtensions.GetSampleFormat(pointer)
+            GetSampleFormat(pointer)
         )!;
 
         // assert
@@ -93,7 +91,7 @@ public class FFmepgExtensionsTests
         };
 
         // act
-        var result = FFmpegExtensions.GetSampleFormat(&parameters);
+        var result = GetSampleFormat(&parameters);
 
         // assert
         Assert.That(result, Is.EqualTo(SampleFormat.None));
@@ -110,7 +108,7 @@ public class FFmepgExtensionsTests
         };
 
         // act
-        var result = FFmpegExtensions.GetSampleFormat(&parameters);
+        var result = GetSampleFormat(&parameters);
 
         // assert
         Assert.That(result, Is.EqualTo(SampleFormat.Unsigned8));
@@ -127,7 +125,7 @@ public class FFmepgExtensionsTests
         };
 
         // act
-        var result = FFmpegExtensions.GetSampleFormat(&parameters);
+        var result = GetSampleFormat(&parameters);
 
         // assert
         Assert.That(result, Is.EqualTo(SampleFormat.Signed16));
@@ -144,7 +142,7 @@ public class FFmepgExtensionsTests
         };
 
         // act
-        var result = FFmpegExtensions.GetSampleFormat(&parameters);
+        var result = GetSampleFormat(&parameters);
 
         // assert
         Assert.That(result, Is.EqualTo(SampleFormat.Signed32));
@@ -163,7 +161,7 @@ public class FFmepgExtensionsTests
 
         // act
         var result = Assert.Catch<ArgumentOutOfRangeException>(() =>
-            FFmpegExtensions.GetSampleFormat(pointer)
+            GetSampleFormat(pointer)
         )!;
 
         // assert
@@ -181,7 +179,7 @@ public class FFmepgExtensionsTests
         };
 
         // act
-        var result = FFmpegExtensions.GetBitDepth(&parameters);
+        var result = GetBitDepth(&parameters);
 
         // assert
         Assert.That(result, Is.EqualTo(1));
@@ -198,7 +196,7 @@ public class FFmepgExtensionsTests
         };
 
         // act
-        var result = FFmpegExtensions.GetBitDepth(&parameters);
+        var result = GetBitDepth(&parameters);
 
         // assert
         Assert.That(result, Is.EqualTo(1));

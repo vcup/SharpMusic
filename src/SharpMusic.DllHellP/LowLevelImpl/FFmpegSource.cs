@@ -2,7 +2,6 @@ using System.Collections;
 using FFmpeg.AutoGen;
 using SharpMusic.DllHellP.Abstract;
 using SharpMusic.DllHellP.Exceptions;
-using SharpMusic.DllHellP.Extensions;
 using SharpMusic.DllHellP.Utils;
 using static FFmpeg.AutoGen.ffmpeg;
 
@@ -53,7 +52,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
 
         _pkt = av_packet_alloc();
 
-        Format = FFmpegExtensions.GetSampleFormat(_stream->codecpar);
+        Format = FFmpegHelper.GetSampleFormat(_stream->codecpar);
     }
 
     public Uri Uri { get; }
@@ -95,7 +94,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
     }
 
     public unsafe long BitRate => _formatCtx->bit_rate;
-    public unsafe int BitDepth => FFmpegExtensions.GetBitDepth(_stream->codecpar);
+    public unsafe int BitDepth => FFmpegHelper.GetBitDepth(_stream->codecpar);
     public unsafe int Channels => _stream->codecpar->ch_layout.nb_channels;
     public unsafe AVChannelLayout ChannelLayout => _stream->codecpar->ch_layout;
     public unsafe int SampleRate => _stream->codecpar->sample_rate;
