@@ -70,7 +70,12 @@ public static class Constants
 
     private class AudioMetaInfo : IAudioMetaInfo
     {
-        public Uri? Uri { get; init; }
+        public AudioMetaInfo()
+        {
+            Uri = new Uri(string.Empty);
+        }
+
+        public Uri Uri { get; init; }
         public TimeSpan Duration { get; init; }
         public long BitRate { get; init; }
         public int BitDepth { get; init; }
