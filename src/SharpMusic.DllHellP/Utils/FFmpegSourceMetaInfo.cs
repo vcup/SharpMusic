@@ -8,7 +8,7 @@ public class FFmpegSourceMetaInfo : IAudioMetaInfo
 {
     private FFmpegSourceMetaInfo()
     {
-        Uri = new Uri("");
+        Uri = new Uri(string.Empty);
     }
 
     public unsafe FFmpegSourceMetaInfo(Uri uri)
