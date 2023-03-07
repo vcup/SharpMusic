@@ -121,9 +121,10 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
         _isDisposed = true;
     }
 
-    public unsafe bool WritePacket(AVRational srcTimebase)
+    public unsafe bool WritePacket()
     {
-        if (!srcTimebase.Equals(_stream->time_base)) av_packet_rescale_ts(_pkt, srcTimebase, _stream->time_base);
+        if (!_pkt->time_base.Equals(_stream->time_base))
+            av_packet_rescale_ts(_pkt, _pkt->time_base, _stream->time_base);
         _pkt->stream_index = _streamIndex;
         var ret = av_interleaved_write_frame(_formatCtx, _pkt);
         if (ret < 0) throw new FFmpegException(ret);
@@ -143,6 +144,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
             ret = av_read_frame(_formatCtx, _pkt);
         } while (ret >= 0 && _pkt->stream_index != _streamIndex);
 
+        _pkt->time_base = _stream->time_base;
         if (ret >= 0) return true;
 
         if (ret != AVERROR_EOF) throw new FFmpegReadingFrameException(ret);

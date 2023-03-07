@@ -48,9 +48,10 @@ public class FFmpegCodec : IEnumerator<IntPtr>
         do
         {
             ret = avcodec_receive_packet(_codecCtx, _packet);
+            _packet->time_base = _codecCtx->time_base;
             if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) break;
             if (ret < 0) throw new FFmpegException(ret);
-        } while (_source.WritePacket(_codecCtx->time_base));
+        } while (_source.WritePacket());
 
         return true;
     }
@@ -61,6 +62,7 @@ public class FFmpegCodec : IEnumerator<IntPtr>
         var ret = avcodec_send_packet(_codecCtx, _packet);
         if (ret < 0) return false;
         ret = avcodec_receive_frame(_codecCtx, _frame);
+        _frame->time_base = _codecCtx->time_base;
         return ret >= 0;
     }
 
