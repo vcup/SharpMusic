@@ -20,7 +20,12 @@ jobs:
           fileName: ffmpeg-n5.1-latest-linux64-gpl-shared-5.1.tar.xz
       - run: tar -xvf ffmpeg-*-latest-linux64-gpl-shared*.tar.xz
       - run: cp -r ffmpeg-*-latest-linux64-gpl-shared*/lib/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
-      - run: dotnet test  
+      - run: dotnet test --settings coverlet.runsettings
+      - name: Codecov
+        uses: codecov/codecov-action@v3.1.1
+        with:
+          directory: coverlet.collected
+      
   windows-latest:
     runs-on: windows-latest
     steps:
@@ -40,4 +45,8 @@ jobs:
           fileName: ffmpeg-n5.1-latest-win64-gpl-shared-5.1.zip
       - run: tar -xf ffmpeg-n5.1-latest-win64-gpl-shared-5.1.zip
       - run: cp -r ffmpeg-n5.1-latest-win64-gpl-shared-5.1/bin/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
-      - run: dotnet test
+      - run: dotnet test --settings coverlet.runsettings
+      - name: Codecov
+        uses: codecov/codecov-action@v3.1.1
+        with:
+          directory: coverlet.collected
