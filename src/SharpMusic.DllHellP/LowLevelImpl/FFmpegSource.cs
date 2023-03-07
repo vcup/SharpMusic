@@ -150,7 +150,9 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
         if (ret != AVERROR_EOF) throw new FFmpegReadingFrameException(ret);
 
 
-        // invoke event from another thread because this method may call by AudioCallback, it will block the thread
+        // invoke event from another thread because this method normally called
+        // SDL_CloseAudioDevice() in they AudioCallback on event register
+        // it will block the thread
         InvokeEventAsync();
 
         return false;
