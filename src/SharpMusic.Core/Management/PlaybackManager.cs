@@ -156,6 +156,7 @@ public class PlaybackManager
         _resampler?.Dispose();
 
         _source = new FFmpegSource(Playlist[_playingIndex].SoundSource.First());
+        _source.MoveNextAudioPacket();
         _decoder = FFmpegCodec.CreateDecoder(_source);
         _resampler = _source.Format.IsSupportFFmpegAndSdl2()
             ? null
