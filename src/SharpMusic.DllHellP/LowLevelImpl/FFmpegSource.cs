@@ -14,9 +14,9 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
 {
     private readonly object _lock = new();
     private readonly unsafe AVFormatContext* _formatCtx;
-    private readonly unsafe AVStream* _stream;
-    private readonly int _streamIndex;
     private readonly unsafe AVPacket* _pkt;
+    private unsafe AVStream* _stream;
+    private int _streamIndex;
     private bool _isDisposed;
 
     private static readonly AVRational Second2Ticks =
@@ -25,6 +25,8 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
     public unsafe FFmpegSource(Uri uri)
     {
         Uri = uri;
+        _stream = null;
+        _streamIndex = -1;
         int ret;
         fixed (AVFormatContext** formatCtx = &_formatCtx)
         {
@@ -43,16 +45,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
             throw new FFmpegFindStreamException($@"Could not find stream information from {uri.OriginalString}", ret);
         }
 
-        for (var i = 0; i < _formatCtx->nb_streams; i++)
-        {
-            if (_formatCtx->streams[i]->codecpar->codec_type is not AVMediaType.AVMEDIA_TYPE_AUDIO) continue;
-            _stream = _formatCtx->streams[_streamIndex = i];
-            break;
-        }
-
         _pkt = av_packet_alloc();
-
-        Format = FFmpegHelper.GetSampleFormat(_stream->codecpar);
     }
 
     public Uri Uri { get; }
@@ -98,7 +91,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
     public unsafe int Channels => _stream->codecpar->ch_layout.nb_channels;
     public unsafe AVChannelLayout ChannelLayout => _stream->codecpar->ch_layout;
     public unsafe int SampleRate => _stream->codecpar->sample_rate;
-    public SampleFormat Format { get; }
+    public SampleFormat Format { get; private set; }
 
     internal unsafe AVCodecParameters* AvCodecParameters => _stream->codecpar;
 
@@ -136,13 +129,17 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
     public unsafe bool MoveNext()
     {
         if (_isDisposed) return false;
-        var ret = 0;
 
-        do
+        av_packet_unref(_pkt);
+        var ret = av_read_frame(_formatCtx, _pkt);
+
+        if (_pkt->stream_index != _streamIndex)
         {
-            av_packet_unref(_pkt);
-            ret = av_read_frame(_formatCtx, _pkt);
-        } while (ret >= 0 && _pkt->stream_index != _streamIndex);
+            _stream = _formatCtx->streams[_streamIndex = _pkt->stream_index];
+            Format = _stream->codecpar->codec_type is AVMediaType.AVMEDIA_TYPE_AUDIO
+                ? FFmpegHelper.GetSampleFormat((AVSampleFormat)_stream->codecpar->format)
+                : SampleFormat.None;
+        }
 
         _pkt->time_base = _stream->time_base;
         if (ret >= 0) return true;
