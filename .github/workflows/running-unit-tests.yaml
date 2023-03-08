@@ -25,6 +25,7 @@ jobs:
 
 
       - if: ${{ runner.os == 'Linux' }}
+        name: download ffmpeg for Linux
         uses: robinraju/release-downloader@v1.6
         with:
           repository: BtbN/FFmpeg-Builds
@@ -32,11 +33,13 @@ jobs:
           tag: latest
           fileName: ffmpeg-n5.1-latest-linux64-gpl-shared-5.1.tar.xz
       - if: ${{ runner.os == 'Linux' }}
+        name: move lib ffmpeg for Linux
         run: |
           tar -xvf ffmpeg-*-latest-linux64-gpl-shared*.tar.xz
           cp -r ffmpeg-*-latest-linux64-gpl-shared*/lib/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
 
       - if: ${{ runner.os == 'Windows' }}
+        name: download ffmpeg for Windows
         uses: robinraju/release-downloader@v1.6
         with:
           repository: BtbN/FFmpeg-Builds
@@ -44,6 +47,7 @@ jobs:
           tag: latest
           fileName: ffmpeg-n5.1-latest-win64-gpl-shared-5.1.zip
       - if: ${{ runner.os == 'Windows' }}
+        name: move lib ffmpeg for Windows
         run: |
           tar -xf ffmpeg-n5.1-latest-win64-gpl-shared-5.1.zip
           cp -r ffmpeg-n5.1-latest-win64-gpl-shared-5.1/bin/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
