@@ -5,10 +5,13 @@ namespace SharpMusic.DllHellP.Extensions;
 
 public static class FFmpegExtensions
 {
-    public static void MoveNextAudioPacket(this FFmpegSource source)
+    public static bool MoveNextAudioPacket(this FFmpegSource source)
     {
-        while (source.Format is SampleFormat.None && source.MoveNext())
+        var result = true;
+        while (source.Format is SampleFormat.None && (result = source.MoveNext()))
         {
         }
+
+        return result;
     }
 }
