@@ -52,6 +52,7 @@ public class FFmpegCodec : IEnumerator<IntPtr>
         {
             ret = avcodec_receive_packet(_codecCtx, _packet);
             _packet->time_base = _codecCtx->time_base;
+            _packet->stream_index = _streamIndex;
             if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) break;
             if (ret < 0) throw new FFmpegException(ret);
         } while (_source.WritePacket());

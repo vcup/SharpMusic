@@ -98,7 +98,6 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
     {
         if (!_pkt->time_base.Equals(Stream->time_base))
             av_packet_rescale_ts(_pkt, _pkt->time_base, Stream->time_base);
-        _pkt->stream_index = _streamIndex;
         var ret = av_interleaved_write_frame(_formatCtx, _pkt);
         if (ret < 0) throw new FFmpegException(ret);
         return true;
