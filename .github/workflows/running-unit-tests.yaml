@@ -1,8 +1,11 @@
 name: running unit tests
 on: [push]
 jobs:
-  linux-ubuntu:
-    runs-on: ubuntu-latest
+  unit-tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -12,39 +15,33 @@ jobs:
           dotnet-version: 7.0.x
       - run: dotnet restore
       - run: dotnet build
-      - uses: robinraju/release-downloader@v1.6
+
+
+      - if: ${{ runner.os == 'ubuntu-latest' }}
+        uses: robinraju/release-downloader@v1.6
         with:
           repository: BtbN/FFmpeg-Builds
           # latest: true
           tag: latest
           fileName: ffmpeg-n5.1-latest-linux64-gpl-shared-5.1.tar.xz
-      - run: tar -xvf ffmpeg-*-latest-linux64-gpl-shared*.tar.xz
-      - run: cp -r ffmpeg-*-latest-linux64-gpl-shared*/lib/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
-      - run: dotnet test --settings coverlet.runsettings
-      - name: Codecov
-        uses: codecov/codecov-action@v3.1.1
-        with:
-          directory: coverlet.collected
-      
-  windows-latest:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - uses: actions/setup-dotnet@v2
-        with:
-          dotnet-version: 7.0.x
-      - run: dotnet restore
-      - run: dotnet build
-      - uses: robinraju/release-downloader@v1.6
+      - if: ${{ runner.os == 'ubuntu-latest' }}
+        run: |
+          tar -xvf ffmpeg-*-latest-linux64-gpl-shared*.tar.xz
+          cp -r ffmpeg-*-latest-linux64-gpl-shared*/lib/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
+
+      - if: ${{ runner.os == 'windows-latest' }}
+        uses: robinraju/release-downloader@v1.6
         with:
           repository: BtbN/FFmpeg-Builds
           # latest: true
           tag: latest
           fileName: ffmpeg-n5.1-latest-win64-gpl-shared-5.1.zip
-      - run: tar -xf ffmpeg-n5.1-latest-win64-gpl-shared-5.1.zip
-      - run: cp -r ffmpeg-n5.1-latest-win64-gpl-shared-5.1/bin/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
+      - if: ${{ runner.os == 'windows-latest' }}
+        run: |
+          tar -xf ffmpeg-n5.1-latest-win64-gpl-shared-5.1.zip
+          cp -r ffmpeg-n5.1-latest-win64-gpl-shared-5.1/bin/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
+
+
       - run: dotnet test --settings coverlet.runsettings
       - name: Codecov
         uses: codecov/codecov-action@v3.1.1
