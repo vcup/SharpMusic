@@ -1,3 +1,4 @@
+using FFmpeg.AutoGen;
 using SharpMusic.DllHellP.LowLevelImpl;
 using SharpMusic.DllHellP.Utils;
 
@@ -5,6 +6,14 @@ namespace SharpMusic.DllHellP.Extensions;
 
 public static class FFmpegExtensions
 {
+    /// <summary>
+    /// read to next packet with <see cref="AVMediaType.AVMEDIA_TYPE_AUDIO"/>
+    /// </summary>
+    /// <param name="source">the <see cref="FFmpegSource"/> will reading packet</param>
+    /// <returns>
+    /// true if the source has moved to an packet with <see cref="AVMediaType.AVMEDIA_TYPE_AUDIO"/>
+    /// false if the source already read to end
+    /// </returns>
     public static bool MoveNextAudioPacket(this FFmpegSource source)
     {
         var result = source.MoveNext();
@@ -15,6 +24,15 @@ public static class FFmpegExtensions
         return result;
     }
 
+    /// <summary>
+    /// read to next packet with specify stream index
+    /// </summary>
+    /// <param name="source">the <see cref="FFmpegSource"/> will reading packet</param>
+    /// <param name="streamIndex">wanted packet with the stream index</param>
+    /// <returns>
+    /// true if the source has moved to an packet with <see cref="AVMediaType.AVMEDIA_TYPE_AUDIO"/>
+    /// false if the source already read to end
+    /// </returns>
     public static unsafe bool MoveNext(this FFmpegSource source, int streamIndex)
     {
         var result = source.MoveNext();
