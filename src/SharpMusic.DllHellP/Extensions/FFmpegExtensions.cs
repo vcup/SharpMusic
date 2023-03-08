@@ -14,4 +14,14 @@ public static class FFmpegExtensions
 
         return result;
     }
+
+    public static unsafe bool MoveNext(this FFmpegSource source, int streamIndex)
+    {
+        var result = true;
+        while (source.Stream->index == streamIndex && (result = source.MoveNext()))
+        {
+        }
+
+        return result;
+    }
 }
