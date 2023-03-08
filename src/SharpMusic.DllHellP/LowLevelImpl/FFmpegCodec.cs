@@ -2,6 +2,7 @@ using System.Collections;
 using System.Diagnostics;
 using FFmpeg.AutoGen;
 using SharpMusic.DllHellP.Exceptions;
+using SharpMusic.DllHellP.Extensions;
 using static FFmpeg.AutoGen.ffmpeg;
 
 namespace SharpMusic.DllHellP.LowLevelImpl;
@@ -16,12 +17,14 @@ public class FFmpegCodec : IEnumerator<IntPtr>
     private readonly unsafe AVCodecContext* _codecCtx;
     private readonly unsafe AVFrame* _frame;
     private readonly unsafe AVPacket* _packet;
+    private readonly int _streamIndex;
     private bool _isDisposed;
 
     private unsafe FFmpegCodec(FFmpegSource source, bool isDecoder)
     {
         _source = source;
         _isDecoder = isDecoder;
+        _streamIndex = _source.Stream->index;
         var codec = isDecoder
             ? avcodec_find_decoder(_source.Stream->codecpar->codec_id)
             : avcodec_find_encoder(_source.Stream->codecpar->codec_id);
@@ -58,7 +61,7 @@ public class FFmpegCodec : IEnumerator<IntPtr>
 
     public unsafe bool MoveNext()
     {
-        if (!_isDecoder || _isDisposed || !_source.MoveNext()) return false;
+        if (!_isDecoder || _isDisposed || !_source.MoveNext(_streamIndex)) return false;
         var ret = avcodec_send_packet(_codecCtx, _packet);
         if (ret < 0) return false;
         ret = avcodec_receive_frame(_codecCtx, _frame);
