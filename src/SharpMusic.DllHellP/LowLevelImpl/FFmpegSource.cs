@@ -95,25 +95,6 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
 
     internal unsafe AVCodecParameters* AvCodecParameters => _stream->codecpar;
 
-    public void Dispose()
-    {
-        Dispose(!_isDisposed);
-        GC.SuppressFinalize(this);
-    }
-
-    private unsafe void Dispose(bool disposing)
-    {
-        if (!disposing || _isDisposed) return;
-        fixed (AVPacket** pkt = &_pkt)
-        fixed (AVFormatContext** formatCtx = &_formatCtx)
-        {
-            avformat_close_input(formatCtx);
-            av_packet_free(pkt);
-        }
-
-        _isDisposed = true;
-    }
-
     public unsafe bool WritePacket()
     {
         if (!_pkt->time_base.Equals(_stream->time_base))
@@ -172,6 +153,25 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
 
     /// <inheritdoc cref="Current"/>
     object IEnumerator.Current => Current;
+
+    public void Dispose()
+    {
+        Dispose(!_isDisposed);
+        GC.SuppressFinalize(this);
+    }
+
+    private unsafe void Dispose(bool disposing)
+    {
+        if (!disposing || _isDisposed) return;
+        fixed (AVPacket** pkt = &_pkt)
+        fixed (AVFormatContext** formatCtx = &_formatCtx)
+        {
+            avformat_close_input(formatCtx);
+            av_packet_free(pkt);
+        }
+
+        _isDisposed = true;
+    }
 
     ~FFmpegSource()
     {
