@@ -119,6 +119,45 @@ public class FFmpegResampler : IDisposable
         return result;
     }
 
+    /// <summary>
+    /// write samples into frame with bytes array
+    /// </summary>
+    /// <param name="frame">the <see cref="AVFrame"/> will write</param>
+    /// <param name="samples">samples, width i.e line size must evenly divisible the bytes per sample</param>
+    /// <returns>wrote samples, zero when is output or disposed</returns>
+    /// <exception cref="Exception">provided number samples doesn't equal frame->nb_samples</exception>
+    public unsafe int WriteFrame(AVFrame* frame, byte[,] samples)
+    {
+        if (_isOutput || _isDisposed) return 0;
+
+        var isPacked = av_sample_fmt_is_planar(_format) is 0;
+        var inLineSize = samples.GetLength(0);
+        var inSamples = inLineSize / av_get_bytes_per_sample(_format);
+        if (isPacked) inSamples /= _channel.nb_channels;
+        var outSamples = (int)av_rescale_rnd(swr_get_delay(_swrCtx, _sampleRate) + inSamples,
+            _codecCtx->sample_rate, _sampleRate, AVRounding.AV_ROUND_UP);
+
+        if (frame->nb_samples != outSamples) throw new Exception();
+
+        var ppSamples = stackalloc byte*[isPacked ? 1 : _channel.nb_channels];
+        fixed (byte* pSamples = samples)
+        {
+            if (isPacked)
+            {
+                ppSamples[0] = pSamples;
+            }
+            else
+            {
+                for (var i = 0; i < inLineSize; i++)
+                {
+                    ppSamples[i] = pSamples + inLineSize * i;
+                }
+            }
+            var ret = swr_convert(_swrCtx, frame->extended_data, outSamples, ppSamples, inSamples);
+            return ret;
+        }
+    }
+
     public void Dispose()
     {
         Dispose(!_isDisposed);
