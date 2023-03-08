@@ -15,7 +15,6 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
     private readonly object _lock = new();
     private readonly unsafe AVFormatContext* _formatCtx;
     private readonly unsafe AVPacket* _pkt;
-    private unsafe AVStream* _stream;
     private int _streamIndex;
     private bool _isDisposed;
 
@@ -25,7 +24,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
     public unsafe FFmpegSource(Uri uri)
     {
         Uri = uri;
-        _stream = null;
+        Stream = null;
         _streamIndex = -1;
         int ret;
         fixed (AVFormatContext** formatCtx = &_formatCtx)
@@ -59,7 +58,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
             if (_pkt->duration <= 0) return TimeSpan.Zero;
             var dts = _pkt->dts;
 
-            var timeBase = _stream->time_base;
+            var timeBase = Stream->time_base;
             // av_rescale_q -> a*b/c
             return TimeSpan.FromTicks(av_rescale_q(dts, timeBase, Second2Ticks));
         }
@@ -78,7 +77,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
     public unsafe void SeekStream(TimeSpan time)
     {
         // timestamp unit is us, 1us = 10Tick
-        var timestamp = av_rescale_q(time.Ticks / 10, FFmpegHelper.AV_TIME_BASE_Q, _stream->time_base);
+        var timestamp = av_rescale_q(time.Ticks / 10, FFmpegHelper.AV_TIME_BASE_Q, Stream->time_base);
 
         lock (_lock)
         {
@@ -87,18 +86,18 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
     }
 
     public unsafe long BitRate => _formatCtx->bit_rate;
-    public unsafe int BitDepth => FFmpegHelper.GetBitDepth(_stream->codecpar);
-    public unsafe int Channels => _stream->codecpar->ch_layout.nb_channels;
-    public unsafe AVChannelLayout ChannelLayout => _stream->codecpar->ch_layout;
-    public unsafe int SampleRate => _stream->codecpar->sample_rate;
+    public unsafe int BitDepth => FFmpegHelper.GetBitDepth(Stream->codecpar);
+    public unsafe int Channels => Stream->codecpar->ch_layout.nb_channels;
+    public unsafe AVChannelLayout ChannelLayout => Stream->codecpar->ch_layout;
+    public unsafe int SampleRate => Stream->codecpar->sample_rate;
     public SampleFormat Format { get; private set; }
 
-    internal unsafe AVCodecParameters* AvCodecParameters => _stream->codecpar;
+    internal unsafe AVStream* Stream { get; private set; }
 
     public unsafe bool WritePacket()
     {
-        if (!_pkt->time_base.Equals(_stream->time_base))
-            av_packet_rescale_ts(_pkt, _pkt->time_base, _stream->time_base);
+        if (!_pkt->time_base.Equals(Stream->time_base))
+            av_packet_rescale_ts(_pkt, _pkt->time_base, Stream->time_base);
         _pkt->stream_index = _streamIndex;
         var ret = av_interleaved_write_frame(_formatCtx, _pkt);
         if (ret < 0) throw new FFmpegException(ret);
@@ -116,13 +115,13 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
 
         if (_pkt->stream_index != _streamIndex)
         {
-            _stream = _formatCtx->streams[_streamIndex = _pkt->stream_index];
-            Format = _stream->codecpar->codec_type is AVMediaType.AVMEDIA_TYPE_AUDIO
-                ? FFmpegHelper.GetSampleFormat((AVSampleFormat)_stream->codecpar->format)
+            Stream = _formatCtx->streams[_streamIndex = _pkt->stream_index];
+            Format = Stream->codecpar->codec_type is AVMediaType.AVMEDIA_TYPE_AUDIO
+                ? FFmpegHelper.GetSampleFormat((AVSampleFormat)Stream->codecpar->format)
                 : SampleFormat.None;
         }
 
-        _pkt->time_base = _stream->time_base;
+        _pkt->time_base = Stream->time_base;
         if (ret >= 0) return true;
 
         if (ret != AVERROR_EOF) throw new FFmpegReadingFrameException(ret);

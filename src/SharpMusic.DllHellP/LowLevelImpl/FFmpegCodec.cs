@@ -23,11 +23,11 @@ public class FFmpegCodec : IEnumerator<IntPtr>
         _source = source;
         _isDecoder = isDecoder;
         var codec = isDecoder
-            ? avcodec_find_decoder(_source.AvCodecParameters->codec_id)
-            : avcodec_find_encoder(_source.AvCodecParameters->codec_id);
+            ? avcodec_find_decoder(_source.Stream->codecpar->codec_id)
+            : avcodec_find_encoder(_source.Stream->codecpar->codec_id);
 
         _codecCtx = avcodec_alloc_context3(codec);
-        var ret = avcodec_parameters_to_context(_codecCtx, _source.AvCodecParameters);
+        var ret = avcodec_parameters_to_context(_codecCtx, _source.Stream->codecpar);
         Debug.Assert(ret is 0);
 
         ret = avcodec_open2(_codecCtx, codec, null);
