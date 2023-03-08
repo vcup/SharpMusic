@@ -12,7 +12,7 @@ jobs:
           submodules: recursive
       - name: Cache dotnet
         id: cache-dotnet
-        uses: actions/cache@latest
+        uses: actions/cache@v3.2.6
         with:
           path: ~/.dotnet
           key: ${{ runner.os }}-dotnet-setup
