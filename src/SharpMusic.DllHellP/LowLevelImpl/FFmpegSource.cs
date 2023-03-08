@@ -12,6 +12,7 @@ namespace SharpMusic.DllHellP.LowLevelImpl;
 /// </summary>
 public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
 {
+    private readonly bool _isReading;
     private readonly object _lock = new();
     private readonly unsafe AVFormatContext* _formatCtx;
     private readonly unsafe AVPacket* _pkt;
@@ -21,20 +22,26 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
     private static readonly AVRational Second2Ticks =
         new() { num = 1, den = (int)TimeSpan.TicksPerSecond }; // is mean 1/10000000
 
-    public unsafe FFmpegSource(Uri uri)
+    public unsafe FFmpegSource(Uri uri, bool isReading = true)
     {
         Uri = uri;
+        _isReading = isReading;
         Stream = null;
         _streamIndex = -1;
         int ret;
         fixed (AVFormatContext** formatCtx = &_formatCtx)
         {
-            ret = avformat_open_input(formatCtx, uri.OriginalString, null, null);
+            ret = isReading
+                ? avformat_open_input(formatCtx, uri.OriginalString, null, null)
+                : avformat_alloc_output_context2(formatCtx, null, null, uri.OriginalString);
             if (ret < 0)
             {
                 throw new FFmpegOpenInputException($"Cannot open uri {uri.OriginalString}", ret);
             }
         }
+
+        _pkt = av_packet_alloc();
+        if (!isReading) return;
 
         ret = avformat_find_stream_info(_formatCtx, null);
         if (ret < 0)
@@ -43,8 +50,6 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
             // dotCover disable next line
             throw new FFmpegFindStreamException($@"Could not find stream information from {uri.OriginalString}", ret);
         }
-
-        _pkt = av_packet_alloc();
     }
 
     public Uri Uri { get; }
@@ -96,6 +101,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
 
     public unsafe bool WritePacket()
     {
+        if (_isDisposed || _isReading) return false;
         if (!_pkt->time_base.Equals(Stream->time_base))
             av_packet_rescale_ts(_pkt, _pkt->time_base, Stream->time_base);
         var ret = av_interleaved_write_frame(_formatCtx, _pkt);
@@ -107,7 +113,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
 
     public unsafe bool MoveNext()
     {
-        if (_isDisposed) return false;
+        if (_isDisposed || !_isReading) return false;
 
         av_packet_unref(_pkt);
         var ret = av_read_frame(_formatCtx, _pkt);
