@@ -7,7 +7,7 @@ public static class FFmpegExtensions
 {
     public static bool MoveNextAudioPacket(this FFmpegSource source)
     {
-        var result = true;
+        var result = source.MoveNext();
         while (source.Format is SampleFormat.None && (result = source.MoveNext()))
         {
         }
@@ -17,7 +17,7 @@ public static class FFmpegExtensions
 
     public static unsafe bool MoveNext(this FFmpegSource source, int streamIndex)
     {
-        var result = true;
+        var result = source.MoveNext();
         while (source.Stream->index == streamIndex && (result = source.MoveNext()))
         {
         }
