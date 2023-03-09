@@ -90,6 +90,36 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
         }
     }
 
+    /// <summary>
+    /// Add an new <see cref="AVStream"/> to AVFormatContext and switch to the stream
+    /// </summary>
+    /// <param name="parameters">parameters will copy to stream</param>
+    public unsafe void AddStream(AVCodecParameters* parameters)
+    {
+        Stream = avformat_new_stream(_formatCtx, null);
+        Stream->index = _streamIndex = (int)(_formatCtx->nb_streams - 1);
+        Stream->time_base = new AVRational { num = 1, den = parameters->sample_rate };
+        avcodec_parameters_copy(Stream->codecpar, parameters);
+    }
+
+    /// <summary>
+    /// set current stream to the index
+    /// </summary>
+    /// <param name="index">index of stream</param>
+    /// <exception cref="ArgumentOutOfRangeException">index out of range</exception>
+    public unsafe void SetCurrentStream(int index)
+    {
+        if (index >= _formatCtx->nb_streams)
+        {
+            throw new ArgumentOutOfRangeException
+                (nameof(index), index, $"the index can only less than {_formatCtx->nb_streams}");
+        }
+
+        Stream = _formatCtx->streams[_streamIndex = index];
+    }
+
+    public unsafe int LengthStreams => (int)_formatCtx->nb_streams;
+
     public unsafe long BitRate => _formatCtx->bit_rate;
     public unsafe int BitDepth => FFmpegHelper.GetBitDepth(Stream->codecpar);
     public unsafe int Channels => Stream->codecpar->ch_layout.nb_channels;
