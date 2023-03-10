@@ -36,7 +36,6 @@ public class FFmpegCodec : IEnumerator<IntPtr>
         ret = avcodec_open2(_codecCtx, codec, null);
         Debug.Assert(ret >= 0);
         _packet = (AVPacket*)source.Current;
-        if (!isDecoder) return;
         _frame = av_frame_alloc();
     }
 
