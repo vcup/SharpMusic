@@ -37,15 +37,22 @@ public class FFmpegCodec : IEnumerator<IntPtr>
         Debug.Assert(ret >= 0);
         _packet = (AVPacket*)source.Current;
         _frame = av_frame_alloc();
+        if (isDecoder) return;
+        _frame->nb_samples = _codecCtx->frame_size;
+        _frame->format = (int)_codecCtx->sample_fmt;
+        ret = av_channel_layout_copy(&_frame->ch_layout, &_codecCtx->ch_layout);
+        if (ret < 0) throw new FFmpegException(ret);
+        ret = av_frame_get_buffer(_frame, 0);
+        if (ret < 0) throw new FFmpegException(ret);
     }
 
     public static FFmpegCodec CreateDecoder(FFmpegSource source) => new(source, true);
     public static FFmpegCodec CreateEncoder(FFmpegSource source) => new(source, false);
 
-    public unsafe bool EncodeFrameAndWrite(AVFrame* frame)
+    public unsafe bool EncodeFrameAndWrite()
     {
         if (_isDecoder || _isDisposed) return false;
-        var ret = avcodec_send_frame(_codecCtx, frame);
+        var ret = avcodec_send_frame(_codecCtx, _frame);
         Debug.Assert(ret >= 0);
         do
         {
