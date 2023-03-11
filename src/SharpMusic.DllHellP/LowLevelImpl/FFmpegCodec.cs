@@ -69,21 +69,21 @@ public class FFmpegCodec : IEnumerator<IntPtr>
     public unsafe bool MoveNext()
     {
         if (!_isDecoder || _isDisposed) return false;
-        var ret = avcodec_send_packet(_codecCtx, _packet);
-        if (ret < 0) throw new FFmpegException(ret);
-        while (ret >= 0)
+        while (true)
         {
-            ret = avcodec_receive_frame(_codecCtx, _frame);
-            if (ret == AVERROR(AVERROR_EOF)) break;
+            var ret = avcodec_receive_frame(_codecCtx, _frame);
+            if (ret is 0 || ret == AVERROR(AVERROR_EOF)) break;
             if (ret == AVERROR(EAGAIN))
             {
-                if (_source.MoveNext(_streamIndex)) continue;
-                return false;
+                if (!_source.MoveNext(_streamIndex)) return false;
+                ret = avcodec_send_packet(_codecCtx, _packet);
             }
+
             if (ret < 0) throw new FFmpegException(ret);
         }
+
         _frame->time_base = _codecCtx->time_base;
-        return ret >= 0;
+        return true;
     }
 
     public void Reset() => _source.Reset();
