@@ -140,7 +140,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
         /// <param name="remainingLen">buffer lenght of stream</param>
         public unsafe void AudioCallback(IntPtr userdata, IntPtr stream, int remainingLen)
         {
-            var bufferLength = 0;
+            var bufferLength = _audioBuffer.Length;
             var pFrame = (AVFrame*)_frames.Current;
             while (remainingLen > 0)
             {
