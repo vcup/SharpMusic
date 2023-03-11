@@ -36,7 +36,7 @@ public static class FFmpegExtensions
     public static unsafe bool MoveNext(this FFmpegSource source, int streamIndex)
     {
         var result = source.MoveNext();
-        while (source.Stream->index == streamIndex && (result = source.MoveNext()))
+        while (source.Stream->index != streamIndex && (result = source.MoveNext()))
         {
         }
 
