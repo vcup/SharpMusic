@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using FFmpeg.AutoGen;
 using SDL2;
 using static SDL2.SDL;
@@ -173,10 +172,6 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
                 {
                     ExternMethod.RtlZeroMemory(stream, processLen);
                 }
-                else if (_owner.Volume is SDL_MIX_MAXVOLUME)
-                {
-                    Marshal.Copy(_audioBuffer, _index, stream, processLen);
-                }
                 else
                 {
                     fixed (byte* data = _audioBuffer)
@@ -185,8 +180,15 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
                         var src = _resampler is null
                             ? *pFrame->extended_data + _index
                             : data + _index;
-                        SDL_MixAudioFormat(stream, (IntPtr)src, _owner._out!.Spec.format,
-                            (uint)processLen, _owner.Volume);
+                        if (_owner.Volume is SDL_MIX_MAXVOLUME)
+                        {
+                            Buffer.MemoryCopy(src, (byte*)stream, remainingLen, processLen);
+                        }
+                        else
+                        {
+                            SDL_MixAudioFormat(stream, (IntPtr)src, _owner._out!.Spec.format,
+                                (uint)processLen, _owner.Volume);
+                        }
                     }
                 }
 
