@@ -48,6 +48,26 @@ public class FFmpegCodec : IEnumerator<IntPtr>
     }
 
     public static FFmpegCodec CreateDecoder(FFmpegSource source) => new(source, true);
+
+    /// <summary>
+    /// create encoder with <see cref="FFmpegSource"/> for encoding and write frame into the source.
+    /// </summary>
+    /// <example>
+    /// usage:
+    /// <code><c>
+    /// using var source = new FFmpegSource(...);
+    /// var codecPar = avcodec_parameters_alloc();
+    /// codecPar->codec_id = AVCodecID.AV_CODEC_ID_FLAC;
+    /// FFmpegHelper.TurningParameters(codecPar);
+    /// source.AddStream(codecPar);
+    /// using var encoder = FFmpegCodec.CreateEncoder(source);
+    /// ...
+    /// </c></code>
+    /// normally need set CodecId and turning the parameters as will,
+    /// that can be use best codec parameter and frame size instead of 1024 samples per frame.
+    /// </example>
+    /// <param name="source">the encoder will write frame as packet into the source</param>
+    /// <returns>instance of <see cref="FFmpegCodec"/> for encode frame</returns>
     public static FFmpegCodec CreateEncoder(FFmpegSource source) => new(source, false);
 
     public unsafe bool EncodeFrameAndWrite()
