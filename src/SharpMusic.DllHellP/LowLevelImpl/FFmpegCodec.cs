@@ -39,6 +39,7 @@ public class FFmpegCodec : IEnumerator<IntPtr>
         _frame = av_frame_alloc();
         if (isDecoder) return;
         _frame->nb_samples = _codecCtx->frame_size;
+        if (_codecCtx->frame_size is 0) _frame->nb_samples = _codecCtx->frame_size = 1024;
         _frame->format = (int)_codecCtx->sample_fmt;
         ret = av_channel_layout_copy(&_frame->ch_layout, &_codecCtx->ch_layout);
         if (ret < 0) throw new FFmpegException(ret);
