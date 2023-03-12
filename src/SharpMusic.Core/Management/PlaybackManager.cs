@@ -45,6 +45,8 @@ public class PlaybackManager
         set => _output.Volume = (int)(value * (_output.MaxVolume / 100.0));
     }
 
+    public void Mute() => _output.IsMute = !_output.IsMute;
+
     public PlaybackMode PlaybackMode
     {
         get => _playbackMode;
