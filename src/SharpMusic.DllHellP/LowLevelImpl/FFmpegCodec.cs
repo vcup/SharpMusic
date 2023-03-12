@@ -57,6 +57,7 @@ public class FFmpegCodec : IEnumerator<IntPtr>
     /// <code><c>
     /// using var source = new FFmpegSource(...);
     /// var codecPar = avcodec_parameters_alloc();
+    /// codecPar->codec_type = AVMediaType.AVMEDIA_TYPE_AUDIO;
     /// codecPar->codec_id = AVCodecID.AV_CODEC_ID_FLAC;
     /// FFmpegHelper.TurningParameters(codecPar);
     /// source.AddStream(codecPar);
