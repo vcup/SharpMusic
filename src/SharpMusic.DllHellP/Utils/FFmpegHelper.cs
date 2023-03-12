@@ -82,4 +82,60 @@ public static class FFmpegHelper
             ? parameters->bits_per_raw_sample
             : parameters->bits_per_coded_sample;
     }
+
+    /// <summary>
+    /// turning the sample_fmt|sample_rate|ch_layout of <see cref="AVCodecContext"/> as best supported
+    /// </summary>
+    /// <remarks>the par->codec_id is required</remarks>
+    public static unsafe void TurningParameters(AVCodecParameters* par)
+    {
+        if (par->codec_type is not AVMediaType.AVMEDIA_TYPE_AUDIO) return;
+        // TODO: test it can only use encoder to find best support parameters
+        var codec = avcodec_find_encoder(par->codec_id);
+        // use first support sample format
+        par->format = (int)codec->sample_fmts[0];
+
+        // select best sample rate
+        {
+            var p = codec->supported_samplerates;
+            var bp = 0;
+            while (p is not null && *p is not 0)
+            {
+                if (bp is 0 || Math.Abs(44100 - *p) < Math.Abs(44100 - bp))
+                {
+                    bp = *p;
+                }
+
+                p++;
+            }
+
+            if (p is not null && *p is not 0) par->sample_rate = bp;
+            else par->sample_rate = 44100;
+        }
+        // select best channel layout
+        {
+            var p = codec->ch_layouts;
+            AVChannelLayout* bc = null;
+            while (p is not null && p->nb_channels is not 0)
+            {
+                if (bc is null || p->nb_channels > bc->nb_channels) bc = p;
+                p++;
+            }
+
+            if (bc is not null) av_channel_layout_copy(&par->ch_layout, bc);
+            else
+            {
+                var src = new AVChannelLayout
+                {
+                    order = AVChannelOrder.AV_CHANNEL_ORDER_NATIVE,
+                    nb_channels = 2,
+                    u = new AVChannelLayout_u
+                    {
+                        mask = AV_CH_LAYOUT_STEREO,
+                    }
+                };
+                av_channel_layout_copy(&par->ch_layout, &src);
+            }
+        }
+    }
 }
