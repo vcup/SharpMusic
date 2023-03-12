@@ -61,6 +61,7 @@ public class FFmpegCodec : IEnumerator<IntPtr>
     /// codecPar->codec_id = AVCodecID.AV_CODEC_ID_FLAC;
     /// FFmpegHelper.TurningParameters(codecPar);
     /// source.AddStream(codecPar);
+    /// source.WriteHeader();
     /// using var encoder = FFmpegCodec.CreateEncoder(source);
     /// ...
     /// </c></code>
