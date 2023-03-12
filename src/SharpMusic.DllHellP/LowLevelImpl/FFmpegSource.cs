@@ -41,7 +41,14 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
         }
 
         _pkt = av_packet_alloc();
-        if (!isReading) return;
+        if (!isReading)
+        {
+            var oFmt = _formatCtx->oformat;
+            if ((oFmt->flags & AVFMT_NOFILE) is not 0) return;
+            ret = avio_open(&_formatCtx->pb, uri.OriginalString, AVIO_FLAG_WRITE);
+            if (ret < 0) throw new FFmpegException(ret);
+            return;
+        }
 
         ret = avformat_find_stream_info(_formatCtx, null);
         if (ret < 0)
@@ -119,6 +126,15 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
     }
 
     public unsafe int LengthStreams => (int)_formatCtx->nb_streams;
+
+    /// <summary>
+    /// write header into media file
+    /// </summary>
+    public unsafe void WriteHeader()
+    {
+        if (_isReading || _isDisposed || (_formatCtx->oformat->flags & AVFMT_NOFILE) is not 0) return;
+        avformat_write_header(_formatCtx, null);
+    }
 
     public unsafe long BitRate => _formatCtx->bit_rate;
     public unsafe int BitDepth => FFmpegHelper.GetBitDepth(Stream->codecpar);
