@@ -16,6 +16,8 @@ public class FFmpegResampler : IDisposable
     private readonly int _sampleRate;
     private readonly bool _isOutput;
     private readonly unsafe SwrContext* _swrCtx;
+    private int _wroteIndex; // only for output
+    private int _remainingSamples; // only for output
     private bool _isDisposed;
 
     /// <summary>
@@ -124,20 +126,37 @@ public class FFmpegResampler : IDisposable
     /// </summary>
     /// <param name="frame">the <see cref="AVFrame"/> will write</param>
     /// <param name="samples">samples, width i.e line size must evenly divisible the bytes per sample</param>
-    /// <returns>wrote samples, zero when is output or disposed</returns>
-    /// <exception cref="Exception">provided number samples doesn't equal frame->nb_samples</exception>
-    public unsafe int WriteFrame(AVFrame* frame, byte[,] samples)
+    /// <param name="remainingSamples">
+    /// remaining samples, zero when all samples has wrote,
+    /// negative meaning cached samples, positive meaning need fill more samples into frame.
+    /// </param>
+    /// <returns>
+    /// return true when all input already write into frame or the frame already fill up samples
+    /// </returns>
+    /// <exception cref="NotSupportedException">the resampler is init with output or already disposed</exception>
+    public unsafe bool WriteFrame(AVFrame* frame, byte[,] samples, out int remainingSamples)
     {
-        if (_isOutput || _isDisposed) return 0;
+        if (_isOutput || _isDisposed) throw new NotSupportedException();
 
         var isPacked = av_sample_fmt_is_planar(_format) is 0;
-        var inLineSize = samples.GetLength(0);
+        var inLineSize = samples.GetLength(1);
         var inSamples = inLineSize / av_get_bytes_per_sample(_format);
         if (isPacked) inSamples /= _channel.nb_channels;
-        var outSamples = (int)av_rescale_rnd(swr_get_delay(_swrCtx, _sampleRate) + inSamples,
-            _codecCtx->sample_rate, _sampleRate, AVRounding.AV_ROUND_UP);
 
-        if (frame->nb_samples != outSamples) throw new Exception();
+        var frameFormat = (AVSampleFormat)frame->format;
+        var frameIsPacket = av_sample_fmt_is_planar(frameFormat) is 0;
+        var ppFrameSamples = stackalloc byte*[frameIsPacket ? 1 : frame->ch_layout.nb_channels];
+        if (frameIsPacket)
+        {
+            ppFrameSamples[0] = frame->extended_data[0] + _wroteIndex * av_get_bytes_per_sample(frameFormat);
+        }
+        else
+        {
+            for (var i = 0; i < frame->ch_layout.nb_channels; i++)
+            {
+                ppFrameSamples[i] = frame->extended_data[i] + _wroteIndex * av_get_bytes_per_sample(frameFormat);
+            }
+        }
 
         var ppSamples = stackalloc byte*[isPacked ? 1 : _channel.nb_channels];
         fixed (byte* pSamples = samples)
@@ -153,8 +172,23 @@ public class FFmpegResampler : IDisposable
                     ppSamples[i] = pSamples + inLineSize * i;
                 }
             }
-            var ret = swr_convert(_swrCtx, frame->extended_data, outSamples, ppSamples, inSamples);
-            return ret;
+
+            var ret = swr_convert(_swrCtx, ppFrameSamples, frame->nb_samples - _wroteIndex, ppSamples, inSamples);
+
+            var outSamples = av_rescale_rnd(swr_get_delay(_swrCtx, _sampleRate) + inSamples,
+                _codecCtx->sample_rate, _sampleRate, AVRounding.AV_ROUND_UP);
+            if (ret is 0 && outSamples is 0)
+            {
+                remainingSamples = _remainingSamples = 0;
+                return true;
+            }
+
+            _wroteIndex += ret;
+            remainingSamples = _remainingSamples += ret - (int)outSamples + (frame->nb_samples - _wroteIndex);
+            if (_wroteIndex < frame->nb_samples) return false;
+            _remainingSamples += inSamples - ret;
+            _wroteIndex = 0;
+            return true;
         }
     }
 
