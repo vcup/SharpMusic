@@ -148,7 +148,8 @@ public class FFmpegResampler : IDisposable
         var ppFrameSamples = stackalloc byte*[frameIsPacket ? 1 : frame->ch_layout.nb_channels];
         if (frameIsPacket)
         {
-            ppFrameSamples[0] = frame->extended_data[0] + _wroteIndex * av_get_bytes_per_sample(frameFormat);
+            ppFrameSamples[0] = frame->extended_data[0] + _wroteIndex * av_get_bytes_per_sample(frameFormat) *
+                _channel.nb_channels;
         }
         else
         {
