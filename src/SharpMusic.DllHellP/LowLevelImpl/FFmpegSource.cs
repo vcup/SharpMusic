@@ -148,11 +148,23 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
     public unsafe bool WritePacket()
     {
         if (_isDisposed || _isReading) return false;
-        if (!_pkt->time_base.Equals(Stream->time_base))
-            av_packet_rescale_ts(_pkt, _pkt->time_base, Stream->time_base);
+        av_packet_rescale_ts(_pkt, _pkt->time_base, Stream->time_base);
         var ret = av_interleaved_write_frame(_formatCtx, _pkt);
         if (ret < 0) throw new FFmpegException(ret);
         return true;
+    }
+
+    public unsafe void WriteAndCloseSource()
+    {
+        if (_isDisposed || _isReading) return;
+        if (_pkt->duration is 0) av_interleaved_write_frame(_formatCtx, null);
+        else
+        {
+            av_packet_rescale_ts(_pkt, _pkt->time_base, Stream->time_base);
+            av_interleaved_write_frame(_formatCtx, _pkt);
+        }
+        av_write_trailer(_formatCtx);
+        Dispose(true);
     }
 
     public delegate void FFmpegSourceEofHandler(FFmpegSource sender);
