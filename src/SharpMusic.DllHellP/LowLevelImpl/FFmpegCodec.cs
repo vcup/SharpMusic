@@ -18,6 +18,7 @@ public class FFmpegCodec : IEnumerator<IntPtr>
     private readonly unsafe AVFrame* _frame;
     private readonly unsafe AVPacket* _packet;
     private readonly int _streamIndex;
+    private long _totalSamples; // only for encoder
     private bool _isDisposed;
 
     private unsafe FFmpegCodec(FFmpegSource source, bool isDecoder)
@@ -75,6 +76,7 @@ public class FFmpegCodec : IEnumerator<IntPtr>
     public unsafe bool EncodeFrameAndWrite()
     {
         if (_isDecoder || _isDisposed) return false;
+        _frame->pts = _totalSamples += _frame->nb_samples;
         var ret = avcodec_send_frame(_codecCtx, _frame);
         Debug.Assert(ret >= 0);
         do
