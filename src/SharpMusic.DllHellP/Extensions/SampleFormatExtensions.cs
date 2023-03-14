@@ -1,4 +1,4 @@
-﻿using FFmpeg.AutoGen;
+using FFmpeg.AutoGen;
 using SharpMusic.DllHellP.Utils;
 using static SDL2.SDL;
 
