@@ -216,7 +216,12 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
         fixed (AVPacket** pkt = &_pkt)
         fixed (AVFormatContext** formatCtx = &_formatCtx)
         {
-            avformat_close_input(formatCtx);
+            if (_isReading) avformat_close_input(formatCtx);
+            else
+            {
+                if ((_formatCtx->oformat->flags & AVFMT_NOFILE) is 0) avio_closep(&_formatCtx->pb);
+                avformat_free_context(_formatCtx);
+            }
             av_packet_free(pkt);
         }
 
