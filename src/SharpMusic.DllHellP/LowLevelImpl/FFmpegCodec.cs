@@ -135,8 +135,10 @@ public class FFmpegCodec : IEnumerator<IntPtr>
     private unsafe void Dispose(bool disposing)
     {
         if (!disposing && _isDisposed) return;
-        _source.Dispose();
-        av_frame_unref(_frame);
+        fixed (AVFrame** frame = &_frame)
+        {
+            av_frame_free(frame);
+        }
         avcodec_close(_codecCtx);
         _isDisposed = true;
     }
