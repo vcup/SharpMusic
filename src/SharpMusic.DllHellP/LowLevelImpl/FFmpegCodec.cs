@@ -91,6 +91,20 @@ public class FFmpegCodec : IEnumerator<IntPtr>
         return true;
     }
 
+    public unsafe void FlushAndCloseEncoder()
+    {
+        if (_isDecoder || _isDisposed) return;
+        var ret = avcodec_send_frame(_codecCtx, null);
+        Debug.Assert(ret >= 0);
+        ret = avcodec_receive_packet(_codecCtx, _packet);
+        Debug.Assert(ret >= 0);
+        _packet->time_base = _codecCtx->time_base;
+        _packet->stream_index = _streamIndex;
+        _source.WritePacket();
+
+        Dispose();
+    }
+
     public unsafe bool MoveNext()
     {
         if (!_isDecoder || _isDisposed) return false;
