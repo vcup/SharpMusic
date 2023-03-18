@@ -101,11 +101,14 @@ public class FFmpegCodec : IEnumerator<IntPtr>
         if (_isDecoder || _isDisposed) return;
         var ret = avcodec_send_frame(_codecCtx, null);
         Debug.Assert(ret >= 0);
-        ret = avcodec_receive_packet(_codecCtx, _packet);
-        Debug.Assert(ret >= 0);
-        _packet->time_base = _codecCtx->time_base;
-        _packet->stream_index = _streamIndex;
-        _source.WritePacket();
+        do
+        {
+            ret = avcodec_receive_packet(_codecCtx, _packet);
+            _packet->time_base = _codecCtx->time_base;
+            _packet->stream_index = _streamIndex;
+            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) break;
+            if (ret < 0) throw new FFmpegException(ret);
+        } while (_source.WritePacket());
 
         Dispose();
     }
