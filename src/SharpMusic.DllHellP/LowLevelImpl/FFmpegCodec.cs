@@ -38,7 +38,12 @@ public class FFmpegCodec : IEnumerator<IntPtr>
         Debug.Assert(ret >= 0);
         _packet = (AVPacket*)source.Current;
         _frame = av_frame_alloc();
-        if (isDecoder) return;
+        _frame->sample_rate = _codecCtx->sample_rate;
+        if (isDecoder)
+        {
+            avcodec_send_packet(_codecCtx, _packet);
+            return;
+        }
         _frame->nb_samples = _codecCtx->frame_size;
         if (_codecCtx->frame_size is 0) _frame->nb_samples = _codecCtx->frame_size = 1024;
         _frame->format = (int)_codecCtx->sample_fmt;
@@ -115,6 +120,7 @@ public class FFmpegCodec : IEnumerator<IntPtr>
             if (ret == AVERROR(EAGAIN))
             {
                 if (!_source.MoveNext(_streamIndex)) return false;
+                av_packet_rescale_ts(_packet, _packet->time_base, _codecCtx->time_base);
                 ret = avcodec_send_packet(_codecCtx, _packet);
             }
 
