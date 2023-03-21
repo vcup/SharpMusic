@@ -29,9 +29,9 @@ jobs:
         uses: robinraju/release-downloader@v1.6
         with:
           repository: BtbN/FFmpeg-Builds
-          # latest: true
-          tag: latest
-          fileName: ffmpeg-n5.1-latest-linux64-gpl-shared-5.1.tar.xz
+          latest: true
+          # tag: latest
+          fileName: ffmpeg-master-latest-linux64-gpl-shared.tar.xz
       - if: ${{ runner.os == 'Linux' }}
         name: move lib ffmpeg for Linux
         run: |
@@ -43,14 +43,14 @@ jobs:
         uses: robinraju/release-downloader@v1.6
         with:
           repository: BtbN/FFmpeg-Builds
-          # latest: true
-          tag: latest
-          fileName: ffmpeg-n5.1-latest-win64-gpl-shared-5.1.zip
+          latest: true
+          # tag: latest
+          fileName: ffmpeg-master-latest-win64-gpl-shared.zip
       - if: ${{ runner.os == 'Windows' }}
         name: move lib ffmpeg for Windows
         run: |
-          tar -xf ffmpeg-n5.1-latest-win64-gpl-shared-5.1.zip
-          cp -r ffmpeg-n5.1-latest-win64-gpl-shared-5.1/bin/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
+          tar -xf ffmpeg-master-latest-win64-gpl-shared.zip
+          cp -r ffmpeg-master-latest-win64-gpl-shared/bin/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
 
 
       - run: dotnet test --settings coverlet.runsettings
