@@ -119,6 +119,7 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
         private readonly IEnumerator<IntPtr> _frames;
         private readonly FFmpegResampler? _resampler;
         private byte[] _audioBuffer;
+        private int _bufferLength;
         private int _index;
 
         /// <param name="owner">Provider want know owner state for adjust volume and call <see cref="SdlAudioOutput.Stop"/> when end of stream</param>
@@ -140,29 +141,28 @@ public class SdlAudioOutput : ISoundOutput, IDisposable
         /// <param name="remainingLen">buffer lenght of stream</param>
         public unsafe void AudioCallback(IntPtr userdata, IntPtr stream, int remainingLen)
         {
-            var bufferLength = _audioBuffer.Length;
             var pFrame = (AVFrame*)_frames.Current;
             while (remainingLen > 0)
             {
-                if (_index >= bufferLength)
+                if (_index >= _bufferLength)
                 {
                     if (!_frames.MoveNext()) break;
                     if (_resampler is null)
                     {
-                        bufferLength = pFrame->nb_samples * pFrame->ch_layout.nb_channels *
+                        _bufferLength = pFrame->nb_samples * pFrame->ch_layout.nb_channels *
                                        ffmpeg.av_get_bytes_per_sample((AVSampleFormat)pFrame->format);
                     }
                     else
                     {
                         _audioBuffer = _resampler.ResampleFrame(pFrame);
-                        bufferLength = _audioBuffer.Length;
+                        _bufferLength = _audioBuffer.Length;
                     }
 
                     _index = 0;
-                    Debug.Assert(bufferLength is not 0);
+                    Debug.Assert(_bufferLength is not 0);
                 }
 
-                var processLen = bufferLength - _index;
+                var processLen = _bufferLength - _index;
                 if (processLen > remainingLen)
                 {
                     processLen = remainingLen;
