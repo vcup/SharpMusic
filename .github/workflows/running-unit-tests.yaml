@@ -6,6 +6,11 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    env:
+      liav_version: master-latest
+      libav_osname: linux64
+      libav_extname: .tar.xz
+      libav_libdir: lib
     steps:
       - uses: actions/checkout@v3
         with:
@@ -23,35 +28,26 @@ jobs:
       - run: dotnet restore
       - run: dotnet build
 
-
-      - if: ${{ runner.os == 'Linux' }}
-        name: download ffmpeg for Linux
+      - if: runner.os == 'Windows'
+        name: reset variable for windows
+        run: |
+          echo "libav_osname=win64" >> $Env:GITHUB_ENV
+          echo "libav_extname=.zip" >> $Env:GITHUB_ENV
+          echo "libav_libdir=bin"   >> $Env:GITHUB_ENV
+      - name: download ffmpeg
+        id: dl_libav
         uses: robinraju/release-downloader@v1.6
         with:
           repository: BtbN/FFmpeg-Builds
           latest: true
           # tag: latest
-          fileName: ffmpeg-master-latest-linux64-gpl-shared.tar.xz
-      - if: ${{ runner.os == 'Linux' }}
-        name: move lib ffmpeg for Linux
+          fileName: ffmpeg-${{ env.liav_version }}-${{ env.libav_osname }}-gpl-shared${{ env.libav_extname }}
+      - name: move libav
+        env: 
+          libav_filename: ffmpeg-${{ env.liav_version }}-${{ env.libav_osname }}-gpl-shared
         run: |
-          tar -xvf ffmpeg-*-latest-linux64-gpl-shared*.tar.xz
-          cp -r ffmpeg-*-latest-linux64-gpl-shared*/lib/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
-
-      - if: ${{ runner.os == 'Windows' }}
-        name: download ffmpeg for Windows
-        uses: robinraju/release-downloader@v1.6
-        with:
-          repository: BtbN/FFmpeg-Builds
-          latest: true
-          # tag: latest
-          fileName: ffmpeg-master-latest-win64-gpl-shared.zip
-      - if: ${{ runner.os == 'Windows' }}
-        name: move lib ffmpeg for Windows
-        run: |
-          tar -xf ffmpeg-master-latest-win64-gpl-shared.zip
-          cp -r ffmpeg-master-latest-win64-gpl-shared/bin/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
-
+          tar -xvf ${{ env.libav_filename }}${{ env.libav_extname }}
+          cp -r ${{ env.libav_filename }}/${{ env.libav_libdir }}/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
 
       - run: dotnet test --settings coverlet.runsettings
       - name: Codecov
