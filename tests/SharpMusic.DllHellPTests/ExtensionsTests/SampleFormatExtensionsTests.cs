@@ -2,7 +2,7 @@ using static SDL2.SDL;
 
 namespace SharpMusic.DllHellPTests.ExtensionsTests;
 
-public class SdlExtensionsTests
+public class SampleFormatExtensionsTests
 {
     [Test]
     public void SampleFormatToSdlFmt_PassNone_ThrowNotSupportedException()
