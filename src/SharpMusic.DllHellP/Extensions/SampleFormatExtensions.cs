@@ -52,7 +52,8 @@ public static class SampleFormatExtensions
                     SampleFormat.Signed64 or SampleFormat.Signed64Planar or
                     SampleFormat.Other => throw new NotSupportedException
                         ($"{format.ToString()} can not map to SDL2 format when {nameof(fallback)} is false"),
-                _ =>
+                _ => // already cover all case of SampleFormat enum
+                    // dotCover disable next line
                     throw new ArgumentOutOfRangeException(nameof(format), format, null)
             };
     }
