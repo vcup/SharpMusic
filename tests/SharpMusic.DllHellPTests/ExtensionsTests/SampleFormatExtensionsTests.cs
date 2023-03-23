@@ -79,11 +79,11 @@ public class SampleFormatExtensionsTests
         new object[] { SampleFormat.Signed32Planar, AUDIO_S32SYS },
         new object[] { SampleFormat.Float32, AUDIO_F32SYS },
         new object[] { SampleFormat.Float32Planar, AUDIO_F32SYS },
-        new object[] { SampleFormat.Double, AUDIO_S16SYS},
-        new object[] { SampleFormat.DoublePlanar, AUDIO_S16SYS},
-        new object[] { SampleFormat.Signed64, AUDIO_S16SYS},
-        new object[] { SampleFormat.Signed64Planar, AUDIO_S16SYS},
-        new object[] { SampleFormat.Other, AUDIO_S16SYS},
+        new object[] { SampleFormat.Double, AUDIO_S16SYS },
+        new object[] { SampleFormat.DoublePlanar, AUDIO_S16SYS },
+        new object[] { SampleFormat.Signed64, AUDIO_S16SYS },
+        new object[] { SampleFormat.Signed64Planar, AUDIO_S16SYS },
+        new object[] { SampleFormat.Other, AUDIO_S16SYS },
     };
 
     [TestCaseSource(nameof(SampleFormatToSdlFmtMapValuesWithFallbackSource))]
@@ -94,5 +94,100 @@ public class SampleFormatExtensionsTests
 
         // assert
         Assert.That(result, Is.EqualTo(except));
+    }
+
+    [Test]
+    public void SampleFormatToFmt_PassUnsigned16_ThrowNotSupportedException()
+    {
+        // arrange
+        const SampleFormat format = SampleFormat.Unsigned16;
+
+        // act & assert
+        Assert.Catch<NotSupportedException>(() =>
+            format.ToFmt()
+        );
+    }
+
+    public static (SampleFormat format, AVSampleFormat except)[] SampleFormatToFmtPassMappedValueReturnExceptValueSource
+    {
+        get;
+    } =
+    {
+        (SampleFormat.None, AVSampleFormat.AV_SAMPLE_FMT_NONE),
+        (SampleFormat.Unsigned8, AVSampleFormat.AV_SAMPLE_FMT_U8),
+        (SampleFormat.Signed16, AVSampleFormat.AV_SAMPLE_FMT_S16),
+        (SampleFormat.Signed32, AVSampleFormat.AV_SAMPLE_FMT_S32),
+        (SampleFormat.Float32, AVSampleFormat.AV_SAMPLE_FMT_FLT),
+        (SampleFormat.Double, AVSampleFormat.AV_SAMPLE_FMT_DBL),
+        (SampleFormat.Unsigned8Planar, AVSampleFormat.AV_SAMPLE_FMT_U8P),
+        (SampleFormat.Signed16Planar, AVSampleFormat.AV_SAMPLE_FMT_S16P),
+        (SampleFormat.Signed32Planar, AVSampleFormat.AV_SAMPLE_FMT_S32P),
+        (SampleFormat.Float32Planar, AVSampleFormat.AV_SAMPLE_FMT_FLTP),
+        (SampleFormat.DoublePlanar, AVSampleFormat.AV_SAMPLE_FMT_DBLP),
+        (SampleFormat.Signed64, AVSampleFormat.AV_SAMPLE_FMT_S64),
+        (SampleFormat.Signed64Planar, AVSampleFormat.AV_SAMPLE_FMT_S64P),
+        (SampleFormat.Other, AVSampleFormat.AV_SAMPLE_FMT_NB),
+    };
+
+    [TestCaseSource(nameof(SampleFormatToFmtPassMappedValueReturnExceptValueSource))]
+    public void SampleFormatToFmt_PassMappedValue_ReturnExceptValue((SampleFormat format, AVSampleFormat except) args)
+    {
+        // arrange
+        var format = args.format;
+        var except = args.except;
+
+        // act
+        var result = format.ToFmt();
+
+        // assert
+        Assert.That(result, Is.EqualTo(except));
+    }
+
+
+    public static (SampleFormat format, AVSampleFormat except)[]
+        SampleFormatToFmtPassMappedValueWithDenyPlanarReturnExceptValueSource { get; } =
+    {
+        (SampleFormat.None, AVSampleFormat.AV_SAMPLE_FMT_NONE),
+        (SampleFormat.Unsigned8, AVSampleFormat.AV_SAMPLE_FMT_U8),
+        (SampleFormat.Signed16, AVSampleFormat.AV_SAMPLE_FMT_S16),
+        (SampleFormat.Signed32, AVSampleFormat.AV_SAMPLE_FMT_S32),
+        (SampleFormat.Float32, AVSampleFormat.AV_SAMPLE_FMT_FLT),
+        (SampleFormat.Double, AVSampleFormat.AV_SAMPLE_FMT_DBL),
+        (SampleFormat.Unsigned8Planar, AVSampleFormat.AV_SAMPLE_FMT_U8P),
+        (SampleFormat.Signed16Planar, AVSampleFormat.AV_SAMPLE_FMT_S16P),
+        (SampleFormat.Signed32Planar, AVSampleFormat.AV_SAMPLE_FMT_S32P),
+        (SampleFormat.Float32Planar, AVSampleFormat.AV_SAMPLE_FMT_FLTP),
+        (SampleFormat.DoublePlanar, AVSampleFormat.AV_SAMPLE_FMT_DBLP),
+        (SampleFormat.Signed64, AVSampleFormat.AV_SAMPLE_FMT_S64),
+        (SampleFormat.Signed64Planar, AVSampleFormat.AV_SAMPLE_FMT_S64P),
+        (SampleFormat.Other, AVSampleFormat.AV_SAMPLE_FMT_NB),
+    };
+
+    [TestCaseSource(nameof(SampleFormatToFmtPassMappedValueWithDenyPlanarReturnExceptValueSource))]
+    public void SampleFormatToFmt_PassMappedValueWithDenyPlanar_ReturnExceptValue(
+        (SampleFormat format, AVSampleFormat except) args)
+    {
+        // arrange
+        var format = args.format;
+        var except = args.except;
+
+        // act
+        var result = format.ToFmt(true);
+
+        // assert
+        Assert.That(result, Is.EqualTo(except));
+    }
+
+    [TestCase(SampleFormat.Unsigned8)]
+    [TestCase(SampleFormat.Signed16)]
+    [TestCase(SampleFormat.Signed32)]
+    [TestCase(SampleFormat.Float32)]
+    public void SampleFormatIsSupportFFmpegAndSdl2_PassExceptSupportValue_ReturnTrue(SampleFormat format)
+    {
+        // act
+        var result = format.IsSupportFFmpegAndSdl2();
+
+        // assert
+        Assert.That(result, Is.True);
     }
 }
