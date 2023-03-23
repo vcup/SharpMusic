@@ -12,7 +12,7 @@ coverage:
     changes: false
     default_rules:
       flag_coverage_not_uploaded_behavior: include
-    patch: false
-    project: false
+    patch: true
+    project: true
 github_checks:
   annotations: true
