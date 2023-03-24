@@ -7,7 +7,6 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     env:
-      libav_version: N-*
       libav_osname: linux64
       libav_extname: .tar.xz
       libav_libdir: lib
@@ -36,18 +35,17 @@ jobs:
           echo "libav_libdir=bin"   >> $Env:GITHUB_ENV
       - name: download ffmpeg
         id: dl_libav
-        uses: robinraju/release-downloader@v1.6
+        uses: vcup/release-downloader@v1.7
         with:
           repository: BtbN/FFmpeg-Builds
           latest: true
           # tag: latest
-          fileName: ffmpeg-${{ env.libav_version }}-${{ env.libav_osname }}-gpl-shared${{ env.libav_extname }}
+          fileName: ffmpeg-*-${{ env.libav_osname }}-gpl-shared${{ env.libav_extname }}
       - name: move libav
-        env: 
-          libav_filename: ffmpeg-${{ env.libav_version }}-${{ env.libav_osname }}-gpl-shared
         run: |
-          tar -xvf ${{ env.libav_filename }}${{ env.libav_extname }}
-          cp -r ${{ env.libav_filename }}/${{ env.libav_libdir }}/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
+          mkdir tmpdir
+          tar -xvf ${{ steps.dl_libav.outputs.downloaded_file_0 }} -C tmpdir
+          mv tmpdir/*/${{ env.libav_libdir }}/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
 
       - run: dotnet test --settings coverlet.runsettings
       - name: Codecov
