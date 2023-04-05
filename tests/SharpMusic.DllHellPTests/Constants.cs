@@ -72,7 +72,7 @@ public static class Constants
     {
         public AudioMetaInfo()
         {
-            Uri = new Uri(string.Empty);
+            Uri = null!;
         }
 
         public Uri Uri { get; init; }
