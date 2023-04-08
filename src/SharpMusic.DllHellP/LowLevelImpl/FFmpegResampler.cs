@@ -17,7 +17,7 @@ public class FFmpegResampler : IDisposable
     private readonly bool _isOutput;
     private readonly unsafe SwrContext* _swrCtx;
     private int _wroteIndex; // only for output
-    private int _remainingSamples; // only for output
+    private int _netRemainingSamples; // only for output
     private bool _isDisposed;
 
     /// <summary>
@@ -126,7 +126,7 @@ public class FFmpegResampler : IDisposable
     /// </summary>
     /// <param name="frame">the <see cref="AVFrame"/> will write</param>
     /// <param name="samples">samples, width i.e line size must evenly divisible the bytes per sample</param>
-    /// <param name="remainingSamples">
+    /// <param name="netRemainingSamples">
     /// remaining samples, zero when all samples has wrote,
     /// negative meaning cached samples, positive meaning need fill more samples into frame.
     /// </param>
@@ -134,7 +134,7 @@ public class FFmpegResampler : IDisposable
     /// return true when all input already write into frame or the frame already fill up samples
     /// </returns>
     /// <exception cref="NotSupportedException">the resampler is init with output or already disposed</exception>
-    public unsafe bool WriteFrame(AVFrame* frame, byte[,] samples, out int remainingSamples)
+    public unsafe bool WriteFrame(AVFrame* frame, byte[,] samples, out int netRemainingSamples)
     {
         if (_isOutput || _isDisposed) throw new NotSupportedException();
 
@@ -180,14 +180,15 @@ public class FFmpegResampler : IDisposable
                 _codecCtx->sample_rate, _sampleRate, AVRounding.AV_ROUND_UP);
             if (ret is 0 && outSamples is 0)
             {
-                remainingSamples = _remainingSamples = 0;
+                netRemainingSamples = _netRemainingSamples = 0;
                 return true;
             }
 
             _wroteIndex += ret;
-            remainingSamples = _remainingSamples += ret - (int)outSamples + (frame->nb_samples - _wroteIndex);
+            // ret - outSamples -> cached samples in swr context
+            netRemainingSamples = _netRemainingSamples += ret - (int)outSamples + (frame->nb_samples - _wroteIndex);
             if (_wroteIndex < frame->nb_samples) return false;
-            _remainingSamples += inSamples - ret;
+            _netRemainingSamples += inSamples - ret;
             _wroteIndex = 0;
             return true;
         }
