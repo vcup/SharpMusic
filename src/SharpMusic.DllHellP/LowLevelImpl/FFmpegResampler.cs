@@ -123,6 +123,46 @@ public class FFmpegResampler : IDisposable
     /// <summary>
     /// write samples into frame with bytes array
     /// </summary>
+    /// <example>
+    /// usage: see also <see cref="FFmpegCodec.CreateEncoder"/>
+    /// <code><c>
+    /// ... make decoder and encoder, see FFmpeg.Codec ...
+    /// var resampler = new FFmpegResampler(encoder.AvCodecCtx, inSource.Format.ToFmt(), inSource.ChannelLayout, inSource.SampleRate, false);
+    /// var inCodecCtx = (AVCodecContext*)decoder.AvCodecCtx;
+    /// var isPlanar = av_sample_fmt_is_planar(inCodecCtx->sample_fmt) is not 0;
+    /// var height = isPlanar ? inCodecCtx->ch_layout.nb_channels : 1;
+    /// var remainingSamples = 0;
+    /// var frame = (AVFrame*)decoder.Current;
+    /// var dFrame = (AVFrame*)encoder.Current;
+    /// do
+    /// {
+    ///     if (remainingSamples >= 0)
+    ///     {
+    ///         if (!decoder.MoveNext()) break;
+    ///         var lineSize = frame->nb_samples * av_get_bytes_per_sample(inCodecCtx->sample_fmt);
+    ///         if (!isPlanar) lineSize *= inCodecCtx->ch_layout.nb_channels;
+    ///         var data = new byte[height, lineSize];
+    ///         fixed (byte* pData = data)
+    ///         {
+    ///             if (isPlanar)
+    ///             {
+    ///                 var lpData = pData;
+    ///                 for (var i = 0; i &lt; height; i++)
+    ///                 {
+    ///                     Buffer.MemoryCopy(frame->extended_data[i], lpData, lineSize, lineSize);
+    ///                     lpData += lineSize;
+    ///                 }
+    ///             }
+    ///             else Buffer.MemoryCopy(frame->extended_data[0], pData, lineSize, lineSize);
+    ///         }
+    ///         if (resampler.WriteFrame(dFrame, data, out remainingSamples)) encoder.EncodeFrameAndWrite();
+    ///     }
+    ///     else if (resampler.WriteFrame(dFrame, new byte[height, 0], out remainingSamples))
+    ///         encoder.EncodeFrameAndWrite();
+    /// } while (true);
+    /// ......
+    /// </c></code>
+    /// </example>
     /// <param name="frame">the <see cref="AVFrame"/> will write</param>
     /// <param name="samples">samples, width i.e line size must evenly divisible the bytes per sample</param>
     /// <param name="netRemainingSamples">
