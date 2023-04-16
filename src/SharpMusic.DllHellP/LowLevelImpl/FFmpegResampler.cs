@@ -17,7 +17,6 @@ public class FFmpegResampler : IDisposable
     private readonly bool _isOutput;
     private readonly unsafe SwrContext* _swrCtx;
     private int _wroteIndex; // only for output
-    private int _netRemainingSamples; // only for output
     private bool _isDisposed;
 
     /// <summary>
@@ -176,19 +175,13 @@ public class FFmpegResampler : IDisposable
 
             var ret = swr_convert(_swrCtx, ppFrameSamples, frame->nb_samples - _wroteIndex, ppSamples, inSamples);
 
-            var outSamples = av_rescale_rnd(swr_get_delay(_swrCtx, _sampleRate) + inSamples,
-                _codecCtx->sample_rate, _sampleRate, AVRounding.AV_ROUND_UP);
-            if (ret is 0 && outSamples is 0)
-            {
-                netRemainingSamples = _netRemainingSamples = 0;
-                return true;
-            }
+            var bufferSamples = swr_get_delay(_swrCtx, _sampleRate);
 
             _wroteIndex += ret;
-            // ret - outSamples -> cached samples in swr context
-            netRemainingSamples = _netRemainingSamples += ret - (int)outSamples + (frame->nb_samples - _wroteIndex);
-            if (_wroteIndex < frame->nb_samples) return false;
-            _netRemainingSamples += inSamples - ret;
+            var freeBuffer = frame->nb_samples - _wroteIndex;
+            netRemainingSamples = freeBuffer - (int)bufferSamples;
+
+            if (freeBuffer is not 0) return false;
             _wroteIndex = 0;
             return true;
         }
