@@ -1,63 +1,44 @@
-using System.Runtime.InteropServices;
+using SharpMusic.DllHellPTests.FFWrappers;
+using SharpMusic.DllHellPTests.Utils;
 
 namespace SharpMusic.DllHellPTests.LowLevelImplTests;
 
 public class FFmpegResamplerTests
 {
-    private const int LENGTH = 1000;
-    private const AVSampleFormat FORMAT = AVSampleFormat.AV_SAMPLE_FMT_U8;
-    private unsafe AVCodec* _codec;
-    private unsafe AVCodecContext* _codecCtx;
-    private unsafe AVFrame* _frame;
-
-    [SetUp]
-    public unsafe void Setup()
-    {
-        _codec = avcodec_find_encoder(AVCodecID.AV_CODEC_ID_MP3);
-        _codecCtx = avcodec_alloc_context3(_codec);
-        _codecCtx->sample_fmt = FORMAT;
-        av_channel_layout_copy(&_codecCtx->ch_layout, _codec->ch_layouts);
-        _codecCtx->sample_rate = *_codec->supported_samplerates;
-
-        _frame = av_frame_alloc();
-        _frame->format = (int)FORMAT;
-        av_channel_layout_copy(&_frame->ch_layout, _codec->ch_layouts);
-        _frame->nb_samples = LENGTH;
-        av_frame_get_buffer(_frame, 0);
-    }
-
-    [TearDown]
-    public unsafe void TearDown()
-    {
-        fixed (AVCodecContext** codecCtx = &_codecCtx)
-        fixed (AVFrame** frame = &_frame)
-        {
-            avcodec_free_context(codecCtx);
-            av_frame_free(frame);
-        }
-    }
-
+    // ReSharper disable once InconsistentNaming
+    private static AVSampleFormat[] WriteFrame_DataBufferOneByOne_WriteCorrect__Formats = {
+        AVSampleFormat.AV_SAMPLE_FMT_U8,
+        AVSampleFormat.AV_SAMPLE_FMT_U8P,
+        AVSampleFormat.AV_SAMPLE_FMT_S16,
+        AVSampleFormat.AV_SAMPLE_FMT_S16P,
+        AVSampleFormat.AV_SAMPLE_FMT_FLT,
+        AVSampleFormat.AV_SAMPLE_FMT_FLTP,
+        AVSampleFormat.AV_SAMPLE_FMT_DBL,
+        AVSampleFormat.AV_SAMPLE_FMT_DBLP,
+    };
     [Test]
-    public unsafe void WriteFrame_DataBufferOneByOne_WriteCorrect()
+    public unsafe void WriteFrame_DataBufferOneByOne_WriteCorrect(
+        [ValueSource(nameof(WriteFrame_DataBufferOneByOne_WriteCorrect__Formats))] AVSampleFormat format,
+        [Values(8000, 44100, 48000)] int length)
     {
         // arrange
-        var rng = new Random();
-        var data = new byte[1, LENGTH];
-        for (var i = 0; i < LENGTH; i++)
-        {
-            data[0, i] = (byte)rng.Next(0, 256);
-        }
-        using var resampler = new FFmpegResampler((nint)_codecCtx,
-            AVSampleFormat.AV_SAMPLE_FMT_U8, *_codec->ch_layouts, *_codec->supported_samplerates, false);
+        var chLayout = StereoChannelLayout;
+        using var ffEncoder = new FFEncoder(AVCodecID.AV_CODEC_ID_FIRST_AUDIO, format, &chLayout);
+        var encoder = ffEncoder.CodecCtx;
+        using var ffFrame = new FFFrame(format, chLayout, length);
+        using var resampler = new FFmpegResampler((IntPtr)encoder,
+            format, encoder->ch_layout, encoder->sample_rate, false);
+
+        var frame = ffFrame.Frame;
+        var data = Generator.RandomSampleData(length, format, chLayout);
+
 
         // act
-        var result = resampler.WriteFrame(_frame, data, out var netRemainingSamples);
-        var frameData = new byte[LENGTH];
-        Marshal.Copy((IntPtr)_frame->data[0], frameData, 0, LENGTH);
-        
+        var result = resampler.WriteFrame(frame, data, out var netRemainingSamples);
+
         // assert
         Assert.That(result, Is.True);
         Assert.That(netRemainingSamples, Is.EqualTo(0));
-        CollectionAssert.AreEqual(data, frameData);
+        CollectionAssert.AreEqual(data, ffFrame);
     }
 }

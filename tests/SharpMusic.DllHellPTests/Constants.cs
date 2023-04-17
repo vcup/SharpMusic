@@ -67,6 +67,16 @@ public static class Constants
             }
         },
     };
+    
+    public static readonly AVChannelLayout StereoChannelLayout = new()
+    {
+        order = AVChannelOrder.AV_CHANNEL_ORDER_NATIVE,
+        nb_channels = 2,
+        u = new AVChannelLayout_u
+        {
+            mask = AV_CH_LAYOUT_STEREO,
+        }
+    };
 
     private class AudioMetaInfo : IAudioMetaInfo
     {
