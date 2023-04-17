@@ -207,9 +207,9 @@ public class FFmpegResampler : IDisposable
             }
             else
             {
-                for (var i = 0; i < inLineSize; i++)
+                for (var i = 0; i < _channel.nb_channels; i++)
                 {
-                    ppSamples[i] = pSamples + inLineSize * i;
+                    ppSamples[i] = pSamples + samples.GetLength(1) * i;
                 }
             }
 
