@@ -214,17 +214,15 @@ public class FFmpegResampler : IDisposable
             }
 
             var ret = swr_convert(_swrCtx, ppFrameSamples, frame->nb_samples - _wroteIndex, ppSamples, inSamples);
-
-            var bufferSamples = swr_get_delay(_swrCtx, _sampleRate);
-
             _wroteIndex += ret;
-            var freeBuffer = frame->nb_samples - _wroteIndex;
-            netRemainingSamples = freeBuffer - (int)bufferSamples;
-
-            if (freeBuffer is not 0) return false;
-            _wroteIndex = 0;
-            return true;
         }
+        var bufferSamples = swr_get_delay(_swrCtx, _sampleRate);
+        var freeBuffer = frame->nb_samples - _wroteIndex;
+        netRemainingSamples = freeBuffer - (int)bufferSamples;
+
+        if (freeBuffer is not 0) return false;
+        _wroteIndex = 0;
+        return true;
     }
 
     public void Dispose()
