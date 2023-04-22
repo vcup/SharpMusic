@@ -1,6 +1,6 @@
 namespace SharpMusic.DllHellPTests.Utils;
 
-public static class Generator
+public static class SampleDataHelper
 {
     public static byte[,] RandomSampleData(int nbSamples, AVSampleFormat format, AVChannelLayout chLayout)
     {

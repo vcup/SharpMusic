@@ -26,7 +26,7 @@ public class FFmpegResamplerTests
     {
         // arrange
         var chLayout = StereoChannelLayout;
-        var data = Generator.RandomSampleData(length, format, chLayout);
+        var data = SampleDataHelper.RandomSampleData(length, format, chLayout);
 
         using var ffFrame = new FFFrame(format, chLayout, length);
         var frame = ffFrame.Frame;
