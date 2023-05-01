@@ -44,7 +44,7 @@ jobs:
       - name: move libav
         run: |
           mkdir tmpdir
-          tar -xvf ${{ steps.dl_libav.outputs.downloaded_file_0 }} -C tmpdir
+          tar -xvf ${{ fromJson(steps.dl_libav.outputs.downloaded_files)[0] }} -C tmpdir
           mv tmpdir/*/${{ env.libav_libdir }}/* tests/SharpMusic.DllHellPTests/bin/Debug/net7.0
 
       - run: dotnet test --settings coverlet.runsettings
