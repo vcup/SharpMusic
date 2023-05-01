@@ -16,6 +16,11 @@ public unsafe class FFFrame : IEnumerable<byte>, IDisposable
         av_frame_get_buffer(_frame, 0);
     }
 
+    internal FFFrame(AVFrame* frame)
+    {
+        _frame = frame;
+    }
+
     public AVFrame* Frame => _frame;
 
     public void Dispose()

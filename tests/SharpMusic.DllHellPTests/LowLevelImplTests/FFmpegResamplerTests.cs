@@ -89,4 +89,47 @@ public class FFmpegResamplerTests
         var cutData = SampleDataHelper.CutSamples(data, format, chLayout, length.net);
         CollectionAssert.AreEqual(cutData, ffFrame);
     }
+
+    // ReSharper disable once InconsistentNaming
+    private static AVSampleFormat[] WriteFrame_DataLessThanBuffer_WriteAllData__Formats =
+            WriteFrame_DataBufferOneByOne_WriteCorrect__Formats.ToArray();
+
+    // ReSharper disable once InconsistentNaming
+    private static (int data, int frame, int net)[] WriteFrame_DataLessThanBuffer_WriteAllData__Lengths =
+    {
+        (7999, 8000, 1),
+        (1024, 2048, 1024),
+        (1024, 4096, 3072),
+    };
+
+    [Test]
+    public unsafe void WriteFrame_DataLessThanBuffer_WriteAllData(
+        [ValueSource(nameof(WriteFrame_DataLessThanBuffer_WriteAllData__Formats))]
+        AVSampleFormat format,
+        [ValueSource(nameof(WriteFrame_DataLessThanBuffer_WriteAllData__Lengths))]
+        (int data, int frame, int net) length
+    )
+    {
+        // arrange
+        var chLayout = StereoChannelLayout;
+        var data = SampleDataHelper.RandomSampleData(length.data, format, chLayout);
+
+        using var ffFrame = new FFFrame(format, chLayout, length.frame);
+        var frame = ffFrame.Frame;
+
+        using var ffEncoder = new FFEncoder(AVCodecID.AV_CODEC_ID_FIRST_AUDIO, format, &chLayout);
+        var encoder = ffEncoder.CodecCtx;
+
+        using var resampler = new FFmpegResampler((IntPtr)encoder,
+            format, encoder->ch_layout, encoder->sample_rate, false);
+
+        // act
+        var result = resampler.WriteFrame(frame, data, out var netRemainingSamples);
+
+        // assert
+        Assert.That(result, Is.False);
+        Assert.That(netRemainingSamples, Is.EqualTo(length.net));
+        var cutData = SampleDataHelper.CutSamples(frame, format, chLayout, -length.net);
+        CollectionAssert.AreEqual(data, cutData);
+    }
 }
