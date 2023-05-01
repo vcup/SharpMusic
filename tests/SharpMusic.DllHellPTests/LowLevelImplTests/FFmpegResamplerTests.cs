@@ -52,7 +52,7 @@ public class FFmpegResamplerTests
             WriteFrame_DataBufferOneByOne_WriteCorrect__Formats.ToArray();
 
     // ReSharper disable once InconsistentNaming
-    private static (int data, int frame, int @out)[] WriteFrame_DataMoreThanBuffer_WritePossibleAndCache__Lengths =
+    private static (int data, int frame, int net)[] WriteFrame_DataMoreThanBuffer_WritePossibleAndCache__Lengths =
     {
         (8000, 7999, -1),
         (2048, 1024, -1024),
@@ -64,7 +64,7 @@ public class FFmpegResamplerTests
         [ValueSource(nameof(WriteFrame_DataMoreThanBuffer_WritePossibleAndCache__Formats))]
         AVSampleFormat format,
         [ValueSource(nameof(WriteFrame_DataMoreThanBuffer_WritePossibleAndCache__Lengths))]
-        (int data, int frame, int @out) length
+        (int data, int frame, int net) length
     )
     {
         // arrange
@@ -85,8 +85,8 @@ public class FFmpegResamplerTests
 
         // assert
         Assert.That(result, Is.True);
-        Assert.That(netRemainingSamples, Is.EqualTo(length.@out));
-        var cutData = SampleDataHelper.CutSamples(data, format, chLayout, length.@out);
+        Assert.That(netRemainingSamples, Is.EqualTo(length.net));
+        var cutData = SampleDataHelper.CutSamples(data, format, chLayout, length.net);
         CollectionAssert.AreEqual(cutData, ffFrame);
     }
 }
