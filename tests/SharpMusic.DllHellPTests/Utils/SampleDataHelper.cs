@@ -72,4 +72,20 @@ public static class SampleDataHelper
         Buffer.BlockCopy(data, 0, inData, 0, data.Length);
         return CutSamples(inData, format, channelLayout, amount);
     }
+
+    public static IEnumerable<byte> Concat2DArraysByRow(params byte[][,] data)
+    {
+        if (data.Length is 0) yield break;
+        if (data.Any(i => i.GetLength(0) != data[0].GetLength(0))) yield break;
+        for (var i = 0; i < data[0].GetLength(0); i++)
+        {
+            foreach (var array2D in data)
+            {
+                for (var j = 0; j < array2D.GetLength(1); j++)
+                {
+                    yield return array2D[i, j];
+                }
+            }
+        }
+    }
 }
