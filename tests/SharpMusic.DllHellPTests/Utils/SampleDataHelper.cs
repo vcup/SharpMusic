@@ -58,14 +58,13 @@ public static class SampleDataHelper
     /// cut data with specify amount of samples
     /// </summary>
     /// <param name="frame">cut data come from</param>
-    /// <param name="format">sample format of data</param>
-    /// <param name="channelLayout">channel layout of data</param>
     /// <param name="amount">number of samples will cut, negative mean cut end bytes, positive mean cut start bytes, do noting when zero</param>
     /// <returns>removed samples from data, data itself when amount is 0</returns>
-    public static unsafe byte[,] CutSamples(AVFrame* frame, AVSampleFormat format, AVChannelLayout channelLayout,
-        int amount)
+    public static unsafe byte[,] CutSamples(AVFrame* frame, int amount)
     {
         var data = new FFFrame(frame).ToArray();
+        var format = (AVSampleFormat)frame->format;
+        var channelLayout = frame->ch_layout;
 
         var inData = av_sample_fmt_is_planar(format) is 0
             ? new byte[1, data.Length]

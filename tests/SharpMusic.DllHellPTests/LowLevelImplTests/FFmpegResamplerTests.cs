@@ -129,7 +129,7 @@ public class FFmpegResamplerTests
         // assert
         Assert.That(result, Is.False);
         Assert.That(netRemainingSamples, Is.EqualTo(length.net));
-        var cutData = SampleDataHelper.CutSamples(frame, format, chLayout, -length.net);
+        var cutData = SampleDataHelper.CutSamples(frame, -length.net);
         CollectionAssert.AreEqual(data, cutData);
     }
 }
