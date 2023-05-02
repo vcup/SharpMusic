@@ -11,7 +11,7 @@ public class FFmpegResamplerTests
         var chLayout = StereoChannelLayout;
 
         const AVSampleFormat format = AVSampleFormat.AV_SAMPLE_FMT_U8;
-        const int length = 1024;
+        const int length = 0;
         using var ffFrame = new FFFrame(format, chLayout, length);
         var frame = ffFrame.Frame;
 
