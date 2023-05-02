@@ -5,6 +5,26 @@ namespace SharpMusic.DllHellPTests.LowLevelImplTests;
 
 public class FFmpegResamplerTests
 {
+    [Test]
+    public unsafe void WriteFrame_UseInOutput_ThrowNotSupportException()
+    {
+        var chLayout = StereoChannelLayout;
+
+        const AVSampleFormat format = AVSampleFormat.AV_SAMPLE_FMT_U8;
+        const int length = 1024;
+        using var ffFrame = new FFFrame(format, chLayout, length);
+        var frame = ffFrame.Frame;
+
+        using var ffEncoder = new FFEncoder(AVCodecID.AV_CODEC_ID_FIRST_AUDIO, format, &chLayout);
+        var encoder = ffEncoder.CodecCtx;
+
+        using var resampler = new FFmpegResampler((IntPtr)encoder,
+            format, encoder->ch_layout, encoder->sample_rate);
+
+        // act & assert
+        Assert.Catch<NotSupportedException>(() => resampler.WriteFrame(frame, new byte[0, 0], out _));
+    }
+
     // ReSharper disable once InconsistentNaming
     private static AVSampleFormat[] WriteFrame_DataBufferOneByOne_WriteCorrect__Formats =
     {
