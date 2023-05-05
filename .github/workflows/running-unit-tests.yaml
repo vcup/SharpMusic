@@ -35,7 +35,7 @@ jobs:
           echo "libav_libdir=bin"   >> $Env:GITHUB_ENV
       - name: download ffmpeg
         id: dl_libav
-        uses: vcup/release-downloader@v1.7
+        uses: robinraju/release-downloader@v1.8
         with:
           repository: BtbN/FFmpeg-Builds
           latest: true
