@@ -31,8 +31,8 @@ public class FFmpegResamplerTests
     [Test]
     public unsafe void WriteFrame_UseInOutput_ThrowNotSupportException()
     {
+        // arrange
         var chLayout = StereoChannelLayout;
-
         const AVSampleFormat format = AVSampleFormat.AV_SAMPLE_FMT_U8;
         const int length = 0;
         using var ffFrame = new FFFrame(format, chLayout, length);
