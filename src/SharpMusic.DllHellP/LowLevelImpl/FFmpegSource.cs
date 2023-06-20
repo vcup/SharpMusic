@@ -1,6 +1,7 @@
 using System.Collections;
 using FFmpeg.AutoGen;
 using SharpMusic.DllHellP.Abstract;
+using SharpMusic.DllHellP.Abstract.Delegate;
 using SharpMusic.DllHellP.Exceptions;
 using SharpMusic.DllHellP.Utils;
 using static FFmpeg.AutoGen.ffmpeg;
@@ -10,7 +11,7 @@ namespace SharpMusic.DllHellP.LowLevelImpl;
 /// <summary>
 /// provide pointer of <see cref="AVPacket"/> and some meta information of the stream
 /// </summary>
-public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
+public class FFmpegSource : IFFmpegSource
 {
     private readonly bool _isReading;
     private readonly object _lock = new();
@@ -97,10 +98,6 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
         }
     }
 
-    /// <summary>
-    /// Add an new <see cref="AVStream"/> to AVFormatContext and switch to the stream
-    /// </summary>
-    /// <param name="parameters">parameters will copy to stream</param>
     public unsafe void AddStream(AVCodecParameters* parameters)
     {
         Stream = avformat_new_stream(_formatCtx, null);
@@ -109,11 +106,6 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
         avcodec_parameters_copy(Stream->codecpar, parameters);
     }
 
-    /// <summary>
-    /// set current stream to the index
-    /// </summary>
-    /// <param name="index">index of stream</param>
-    /// <exception cref="ArgumentOutOfRangeException">index out of range</exception>
     public unsafe void SetCurrentStream(int index)
     {
         if (index >= _formatCtx->nb_streams)
@@ -127,9 +119,6 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
 
     public unsafe int LengthStreams => (int)_formatCtx->nb_streams;
 
-    /// <summary>
-    /// write header into media file
-    /// </summary>
     public unsafe void WriteHeader()
     {
         if (_isReading || _isDisposed || (_formatCtx->oformat->flags & AVFMT_NOFILE) is not 0) return;
@@ -143,7 +132,7 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
     public unsafe int SampleRate => Stream->codecpar->sample_rate;
     public SampleFormat Format { get; private set; }
 
-    internal unsafe AVStream* Stream { get; private set; }
+    public unsafe AVStream* Stream { get; private set; }
 
     public unsafe bool WritePacket()
     {
@@ -166,9 +155,6 @@ public class FFmpegSource : ISoundSource, IAudioMetaInfo, IEnumerator<IntPtr>
         av_write_trailer(_formatCtx);
         Dispose(true);
     }
-
-    public delegate void FFmpegSourceEofHandler(FFmpegSource sender);
-
     public unsafe bool MoveNext()
     {
         if (_isDisposed || !_isReading) return false;

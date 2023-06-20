@@ -72,19 +72,19 @@ public class PlaybackManager
                         throw new ArgumentOutOfRangeException(nameof(value), value, null);
                 }
 
-                void LoopAllOnSourceEof(FFmpegSource sender)
+                void LoopAllOnSourceEof(IFFmpegSource sender)
                 {
                     PlayNext();
                 }
 
-                void ShuffleOnSourceEof(FFmpegSource sender)
+                void ShuffleOnSourceEof(IFFmpegSource sender)
                 {
                     _playingIndex = Random.Shared.Next(Playlist.Count());
                     ReOpenCurrentMusic();
                     PlayOrResume();
                 }
 
-                void LoopSingleOnSourceEof(FFmpegSource sender)
+                void LoopSingleOnSourceEof(IFFmpegSource sender)
                 {
                     sender.ResetStream();
                 }
