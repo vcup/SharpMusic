@@ -1,6 +1,6 @@
 namespace SharpMusic.DllHellPTests.ExtensionsTests;
 
-public class FFmepgExtensionsTests
+public class FFmepgHelperTests
 {
     // reference 'https://ffmpeg.org/doxygen/trunk/group__lavu__misc.html#ga9a84bba4713dfced21a1a56163be1f48'
     [TestCase(AVMediaType.AVMEDIA_TYPE_UNKNOWN)]
