@@ -84,7 +84,7 @@ public static class FFmpegHelper
     }
 
     /// <summary>
-    /// turning the sample_fmt|sample_rate|ch_layout of <see cref="AVCodecContext"/> as best supported
+    /// turning the sample_fmt|sample_rate|ch_layout of <see cref="AVCodecParameters"/> as best supported for codec
     /// </summary>
     /// <remarks>the par->codec_id is required</remarks>
     public static unsafe void TurningParameters(AVCodecParameters* par)
