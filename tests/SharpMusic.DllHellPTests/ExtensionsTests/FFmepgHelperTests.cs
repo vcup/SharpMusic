@@ -28,93 +28,72 @@ public class FFmepgHelperTests
         Assert.That(result.Message.Contains(type.ToString(), StringComparison.Ordinal), Is.True);
     }
 
-    [Test]
-    public unsafe void GetSampleFormat_AVSampleFormatNone_GetNone()
+    // ReSharper disable once InconsistentNaming
+    private static (AVSampleFormat avFmt, SampleFormat fmt)[]
+        GetSampleFormat_PassAvCodecParameter_GetSampleFormat__Source =
+        {
+            (AVSampleFormat.AV_SAMPLE_FMT_NONE, SampleFormat.None),
+            (AVSampleFormat.AV_SAMPLE_FMT_U8, SampleFormat.Unsigned8),
+            (AVSampleFormat.AV_SAMPLE_FMT_S16, SampleFormat.Signed16),
+            (AVSampleFormat.AV_SAMPLE_FMT_S32, SampleFormat.Signed32),
+            (AVSampleFormat.AV_SAMPLE_FMT_FLT, SampleFormat.Float32),
+            (AVSampleFormat.AV_SAMPLE_FMT_DBL, SampleFormat.Double),
+            (AVSampleFormat.AV_SAMPLE_FMT_U8P, SampleFormat.Unsigned8Planar),
+            (AVSampleFormat.AV_SAMPLE_FMT_S16P, SampleFormat.Signed16Planar),
+            (AVSampleFormat.AV_SAMPLE_FMT_S32P, SampleFormat.Signed32Planar),
+            (AVSampleFormat.AV_SAMPLE_FMT_FLTP, SampleFormat.Float32Planar),
+            (AVSampleFormat.AV_SAMPLE_FMT_DBLP, SampleFormat.DoublePlanar),
+            (AVSampleFormat.AV_SAMPLE_FMT_S64, SampleFormat.Signed64),
+            (AVSampleFormat.AV_SAMPLE_FMT_S64P, SampleFormat.Signed64Planar),
+            (AVSampleFormat.AV_SAMPLE_FMT_NB, SampleFormat.Other),
+        };
+
+    [TestCaseSource(nameof(GetSampleFormat_PassAvCodecParameter_GetSampleFormat__Source))]
+    public unsafe void GetSampleFormat_PassAvCodecParameter_GetSampleFormat(
+        (AVSampleFormat avFmt, SampleFormat fmt) args)
     {
         // arrange
-        var parameters = new AVCodecParameters
+        var parameter = new AVCodecParameters
         {
             codec_type = AVMediaType.AVMEDIA_TYPE_AUDIO,
-            format = (int)AVSampleFormat.AV_SAMPLE_FMT_NONE
+            format = (int)args.avFmt,
         };
 
         // act
-        var result = GetSampleFormat(&parameters);
+        var result = GetSampleFormat(&parameter);
 
         // assert
-        Assert.That(result, Is.EqualTo(SampleFormat.None));
+        Assert.That(result, Is.EqualTo(args.fmt));
     }
 
-    [Test]
-    public unsafe void GetSampleFormat_AVSampleFormatU8_GetUnsigned8()
+    [TestCaseSource(nameof(GetSampleFormat_PassAvCodecParameter_GetSampleFormat__Source))]
+    public void GetSampleFormat_PassAvSampleFormat_GetSampleFormat((AVSampleFormat avFmt, SampleFormat fmt) args)
     {
         // arrange
-        var parameters = new AVCodecParameters
-        {
-            codec_type = AVMediaType.AVMEDIA_TYPE_AUDIO,
-            format = (int)AVSampleFormat.AV_SAMPLE_FMT_U8
-        };
+        var avSampleFormat = args.avFmt;
+        var sampleFormat = args.fmt;
 
         // act
-        var result = GetSampleFormat(&parameters);
+        var result = GetSampleFormat(avSampleFormat);
 
         // assert
-        Assert.That(result, Is.EqualTo(SampleFormat.Unsigned8));
+        Assert.That(result, Is.EqualTo(sampleFormat));
     }
 
     [Test]
-    public unsafe void GetSampleFormat_AVSampleFormatS16_GetSigned16()
+    public void GetSampleFormat_InvalidFormat_ThrowArgumentOutOfRangeException()
     {
         // arrange
-        var parameters = new AVCodecParameters
-        {
-            codec_type = AVMediaType.AVMEDIA_TYPE_AUDIO,
-            format = (int)AVSampleFormat.AV_SAMPLE_FMT_S16
-        };
-
-        // act
-        var result = GetSampleFormat(&parameters);
-
-        // assert
-        Assert.That(result, Is.EqualTo(SampleFormat.Signed16));
-    }
-
-    [Test]
-    public unsafe void GetSampleFormat_AVSampleFormatS32_GetSigned32()
-    {
-        // arrange
-        var parameters = new AVCodecParameters
-        {
-            codec_type = AVMediaType.AVMEDIA_TYPE_AUDIO,
-            format = (int)AVSampleFormat.AV_SAMPLE_FMT_S32
-        };
-
-        // act
-        var result = GetSampleFormat(&parameters);
-
-        // assert
-        Assert.That(result, Is.EqualTo(SampleFormat.Signed32));
-    }
-
-    [Test]
-    public unsafe void GetSampleFormat_InvalidFormat_ThrowArgumentOutOfRangeException()
-    {
-        // arrange
-        var parameters = new AVCodecParameters
-        {
-            codec_type = AVMediaType.AVMEDIA_TYPE_AUDIO,
-            format = int.MaxValue
-        };
-        var pointer = &parameters;
+        const AVSampleFormat format = (AVSampleFormat)int.MaxValue;
 
         // act
         var result = Assert.Catch<ArgumentOutOfRangeException>(() =>
-            GetSampleFormat(pointer)
+            GetSampleFormat(format)
         )!;
 
         // assert
-        Assert.That(result.ParamName, Is.EqualTo(nameof(parameters.format)));
-        Assert.That(result.ActualValue, Is.EqualTo((AVSampleFormat)parameters.format));
+        Assert.That(result.ParamName, Is.EqualTo(nameof(format)));
+        Assert.That(result.ActualValue, Is.EqualTo(format));
     }
 
     [Test]
