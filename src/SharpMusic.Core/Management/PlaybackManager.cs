@@ -10,7 +10,7 @@ namespace SharpMusic.Core.Management;
 public class PlaybackManager
 {
     private readonly SdlAudioOutput _output;
-    private FFmpegSource? _source;
+    private IFFmpegSource? _source;
     private FFmpegCodec? _decoder;
     private FFmpegResampler? _resampler;
     private int _playingIndex;

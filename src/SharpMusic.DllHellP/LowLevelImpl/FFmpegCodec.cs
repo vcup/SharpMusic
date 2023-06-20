@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Diagnostics;
 using FFmpeg.AutoGen;
+using SharpMusic.DllHellP.Abstract;
 using SharpMusic.DllHellP.Exceptions;
 using SharpMusic.DllHellP.Extensions;
 using static FFmpeg.AutoGen.ffmpeg;
@@ -8,11 +9,11 @@ using static FFmpeg.AutoGen.ffmpeg;
 namespace SharpMusic.DllHellP.LowLevelImpl;
 
 /// <summary>
-/// decode <see cref="AVPacket"/> from <see cref="FFmpegSource"/>, provide pointer of <see cref="AVFrame"/>
+/// decode <see cref="AVPacket"/> from <see cref="IFFmpegSource"/>, provide pointer of <see cref="AVFrame"/>
 /// </summary>
 public class FFmpegCodec : IEnumerator<IntPtr>
 {
-    private readonly FFmpegSource _source;
+    private readonly IFFmpegSource _source;
     private readonly bool _isDecoder;
     private readonly unsafe AVCodecContext* _codecCtx;
     private readonly unsafe AVFrame* _frame;
@@ -21,7 +22,7 @@ public class FFmpegCodec : IEnumerator<IntPtr>
     private long _totalSamples; // only for encoder
     private bool _isDisposed;
 
-    private unsafe FFmpegCodec(FFmpegSource source, bool isDecoder)
+    private unsafe FFmpegCodec(IFFmpegSource source, bool isDecoder)
     {
         _source = source;
         _isDecoder = isDecoder;
@@ -53,10 +54,10 @@ public class FFmpegCodec : IEnumerator<IntPtr>
         if (ret < 0) throw new FFmpegException(ret);
     }
 
-    public static FFmpegCodec CreateDecoder(FFmpegSource source) => new(source, true);
+    public static FFmpegCodec CreateDecoder(IFFmpegSource source) => new(source, true);
 
     /// <summary>
-    /// create encoder with <see cref="FFmpegSource"/> for encoding and write frame into the source.
+    /// create encoder with <see cref="IFFmpegSource"/> for encoding and write frame into the source.
     /// </summary>
     /// <example>
     /// usage:
@@ -76,7 +77,7 @@ public class FFmpegCodec : IEnumerator<IntPtr>
     /// </example>
     /// <param name="source">the encoder will write frame as packet into the source</param>
     /// <returns>instance of <see cref="FFmpegCodec"/> for encode frame</returns>
-    public static FFmpegCodec CreateEncoder(FFmpegSource source) => new(source, false);
+    public static FFmpegCodec CreateEncoder(IFFmpegSource source) => new(source, false);
 
     public unsafe bool EncodeFrameAndWrite()
     {
