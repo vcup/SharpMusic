@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using SharpMusic.DllHellP.Abstract.Delegate;
 using SharpMusic.DllHellPTests.Utils;
 
@@ -61,6 +62,7 @@ public class FFmpegExtensionsTests
         Assert.That(formats.GetShareEnumerable().Count(), Is.EqualTo(5));
     }
 
+    [ExcludeFromCodeCoverage(Justification = "temp class")]
     private class CustomFFmpegSource : IFFmpegSource
     {
         private readonly IEnumerator<SampleFormat> _formats;
