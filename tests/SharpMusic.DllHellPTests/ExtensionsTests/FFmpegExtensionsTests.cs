@@ -50,7 +50,6 @@ public class FFmpegExtensionsTests
             SampleFormat.Unsigned8, SampleFormat.None, SampleFormat.None,
             SampleFormat.None, SampleFormat.None, SampleFormat.None,
         };
-        // ReSharper disable once PossibleMultipleEnumeration
         var source = new CustomFFmpegSource(formats.GetShareEnumerator());
 
         // act
@@ -58,7 +57,6 @@ public class FFmpegExtensionsTests
         source.MoveNext();
 
         // assert
-        // ReSharper disable once PossibleMultipleEnumeration
         Assert.That(formats.GetShareEnumerable().Count(), Is.EqualTo(5));
     }
 
