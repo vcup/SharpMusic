@@ -61,6 +61,50 @@ public class FFmpegExtensionsTests
         Assert.That(formats.GetShareEnumerable().Count(), Is.EqualTo(5));
     }
 
+    [Test]
+    public void MoveNext_UsingNotExistStreamIndex_SkipAllPacket()
+    {
+        // arrange
+        var indexOfPackets = Enumerable.Repeat(0, 5).GetEnumerator();
+        var source = new CustomFFmpegSource(indexOfPackets);
+
+        // act
+        source.MoveNext(1);
+
+        // assert
+        Assert.That(indexOfPackets.MoveNext(), Is.False);
+    }
+
+    [Test]
+    public void MoveNext_UsingSequenceContainAnPacketWithSpecifyStream_MoveToPacketWithSpecifyStream()
+    {
+        // arrange
+        var indexOfPackets = new[] { 0, 0, 1, 0, 0, 0 };
+        var source = new CustomFFmpegSource(indexOfPackets.GetShareEnumerator());
+
+        // act
+        source.MoveNext(1);
+        source.MoveNext();
+
+        // assert
+        Assert.That(indexOfPackets.GetShareEnumerable(), Is.All.EqualTo(0));
+    }
+
+    [Test]
+    public void MoveNext_PacketOfSpecifyStreamFollowsPacketOfOtherStream_MoveToHead()
+    {
+        // arrange
+        var indexOfPackets = new[] { 1, 0, 0, 0, 0, 0 };
+        var source = new CustomFFmpegSource(indexOfPackets.GetShareEnumerator());
+
+        // act
+        source.MoveNext(1);
+        source.MoveNext();
+
+        // assert
+        Assert.That(indexOfPackets.GetShareEnumerable().Count(), Is.EqualTo(5));
+    }
+
     [ExcludeFromCodeCoverage(Justification = "temp class")]
     private class CustomFFmpegSource : IFFmpegSource
     {
