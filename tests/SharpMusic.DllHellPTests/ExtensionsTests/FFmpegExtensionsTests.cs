@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using SharpMusic.DllHellP.Abstract.Delegate;
 using SharpMusic.DllHellPTests.Utils;
 
@@ -63,17 +64,35 @@ public class FFmpegExtensionsTests
     [ExcludeFromCodeCoverage(Justification = "temp class")]
     private class CustomFFmpegSource : IFFmpegSource
     {
-        private readonly IEnumerator<SampleFormat> _formats;
+        private readonly IEnumerator<SampleFormat>? _formats;
+        private readonly IEnumerator<int>? _indexOfPackets;
+        private readonly bool _isFormat;
+        private bool _disposed;
 
         public CustomFFmpegSource(IEnumerator<SampleFormat> formats)
         {
             _formats = formats;
+            _isFormat = true;
         }
 
-        public bool MoveNext()
+        public unsafe CustomFFmpegSource(IEnumerator<int> indexOfPackets)
         {
-            var result = _formats.MoveNext();
-            Format = _formats.Current;
+            _indexOfPackets = indexOfPackets;
+            Stream = (AVStream*)Marshal.AllocHGlobal(sizeof(AVStream));
+        }
+
+        public unsafe bool MoveNext()
+        {
+            bool result;
+            if (_isFormat)
+            {
+                result = _formats!.MoveNext();
+                Format = _formats.Current;
+                return result;
+            }
+
+            result = _indexOfPackets!.MoveNext();
+            Stream->index = _indexOfPackets.Current;
             return result;
         }
 
@@ -81,11 +100,23 @@ public class FFmpegExtensionsTests
 
         public SampleFormat Format { get; private set; }
 
+        public unsafe AVStream* Stream { get; }
+
+        public unsafe void Dispose()
+        {
+            if (_isFormat || _disposed) return;
+            Marshal.FreeHGlobal((IntPtr)Stream);
+            _disposed = true;
+        }
+
+        ~CustomFFmpegSource()
+        {
+            Dispose();
+        }
+
         #region non-impl members
 
         public void SetCurrentStream(int index) { }
-
-        public unsafe AVStream* Stream => null!;
 
         public int LengthStreams => default;
 
@@ -115,8 +146,6 @@ public class FFmpegExtensionsTests
         public void Reset() { }
 
         object IEnumerator.Current => Current;
-
-        public void Dispose() { }
 
         #endregion
     }
